@@ -1,0 +1,11 @@
+/afs/cern.ch/work/p/ppalit/public/Data_MC/forgitpush/CMSSW_10_6_2/src/DQM/TrackingMonitorSource/Jobs/Run2017_UL/data/SingleMu/DQM_V0001_R000302131__Global__CMSSW_X_Y_Z__RECO.root:Data
+#/afs/cern.ch/work/p/ppalit/public/Data_MC/forgitpush/CMSSW_10_6_2/src/DQM/TrackingMonitorSource/Jobs/Run2017_EOY/ZeroBias/DQM_V0001_R000302131__Global__CMSSW_X_Y_Z__RECO.root:Data Run2 EOY
+/afs/cern.ch/work/p/ppalit/public/Data_MC/forgitpush/CMSSW_10_6_2/src/DQM/TrackingMonitorSource/Jobs/Run2017_UL/data/SingleMu/DQM_V0001_R000302131__Global__CMSSW_X_Y_Z__RECO.root:Data Run2 Legacy
+/afs/cern.ch/work/p/ppalit/public/Data_MC/forgitpush/CMSSW_10_6_2/src/DQM/TrackingMonitorSource/Jobs/Run2017_UL/data/ZtoMM/DQM_V0001_R000000001__Global__CMSSW_X_Y_Z__RECO.root:MC
+/afs/cern.ch/work/p/ppalit/public/Data_MC/forgitpush/CMSSW_10_6_2/src/DQM/TrackingMonitorSource/Jobs/Run2017_EOY/NuGun/DQM_V0001_R000000001__Global__CMSSW_X_Y_Z__RECO.root:MC_EOY_ULwt
+/afs/cern.ch/work/p/ppalit/public/Data_MC/forgitpush/CMSSW_10_6_2/src/DQM/TrackingMonitorSource/Jobs/Run2017_EOY/NuGun/DQM_V0001_R000000001__Global__CMSSW_X_Y_Z__RECO.root:MC Run2 EOY
+#MinBias/DQM_V0001_R000000001__Global__CMSSW_X_Y_Z__RECO.root:MC
+#SingleEle/DQM_V0001_R000316060__Global__CMSSW_X_Y_Z__RECO.root:data
+#ZtoEE/DQM_V0001_R000000001__Global__CMSSW_X_Y_Z__RECO.root:MC
+#SingleMu/DQM_V0001_R000316060__Global__CMSSW_X_Y_Z__RECO.root:data
+#ZtoMM/DQM_V0001_R000000001__Global__CMSSW_X_Y_Z__RECO.root:MC
