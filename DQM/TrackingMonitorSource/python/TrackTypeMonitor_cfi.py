@@ -1,6 +1,5 @@
 import FWCore.ParameterSet.Config as cms
-from DQMServices.Core.DQMEDAnalyzer import DQMEDAnalyzer
-trackTypeMonitor = DQMEDAnalyzer('TrackTypeMonitor',
+trackTypeMonitor = cms.EDAnalyzer('TrackTypeMonitor',
     trackInputTag   = cms.untracked.InputTag('selectedTracks'),
     offlineBeamSpot = cms.untracked.InputTag('offlineBeamSpot'),
     trackQuality    = cms.untracked.string('highPurity'),

@@ -32,10 +32,10 @@
 #include "DQM/TrackingMonitor/interface/TrackBuildingAnalyzer.h"
 #include <string>
 #include <ostream>
- 
-/*namespace {
+
+namespace {
   bool trackSelected(unsigned char mask, unsigned char qual) { return mask & 1 << qual; } 
-  }*/
+}
 
 // -----------------------------
 // constructors and destructor
@@ -169,9 +169,9 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
 
   std::vector<std::string> mvaProducers = parameters_.getUntrackedParameter<std::vector<std::string> >("MVAProducers");
   edm::InputTag tcProducer = parameters_.getUntrackedParameter<edm::InputTag>("TCProducer");
-  // MVA
-  //const std::string& CatagoryName = algoName_;
-  /*
+  //MVA
+  const std::string& CatagoryName = algoName_;
+
   for (size_t i = 1, end = mvaProducers.size(); i <= end; ++i) {
     auto num = std::to_string(i);
     std::string pfix;
@@ -215,7 +215,7 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
     trackMVAsVsEtaProfile.back()->setAxisTitle("Track selection MVA" + num, 2);
   }
 
-  */
+
   // MVA
 
 
@@ -227,8 +227,8 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
 			      TrackEtaHistoPar.getParameter<double>("Xmax"));
     
     trackEtaerrH_ = ibook.book1D("trackEtaerr", "Track Eta Error", 50,0.0,1.0);
-    //trackCosThetaH_ = ibook.book1D("trackCosTheta", "Track Cos(Theta)", 50,-1.0,1.0);
-    //trackThetaerrH_ = ibook.book1D("trackThetaerr", "Track Theta Error", 50,0.0,1.0);
+    trackCosThetaH_ = ibook.book1D("trackCosTheta", "Track Cos(Theta)", 50,-1.0,1.0);
+    trackThetaerrH_ = ibook.book1D("trackThetaerr", "Track Theta Error", 50,0.0,1.0);
     trackPhiH_ = ibook.book1D("trackPhi", "Track Phi", 70,-3.5,3.5);
     trackPhierrH_ = ibook.book1D("trackPhierr", "Track Phi Error", 50,0.0,1.0);
     
@@ -237,8 +237,8 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
 			     TrackPtHistoPar.getParameter<int32_t>("Xbins"),
 			     TrackPtHistoPar.getParameter<double>("Xmin"),
 			     TrackPtHistoPar.getParameter<double>("Xmax"));
-    //    trackPtUpto2GeVH_ = ibook.book1D("trackPtUpto2GeV", "Track Pt upto 2GeV",100,0,2.0);
-    //trackPtOver10GeVH_ = ibook.book1D("trackPtOver10GeV","Track Pt greater than 10 GeV",100,0,100.0);
+    trackPtUpto2GeVH_ = ibook.book1D("trackPtUpto2GeV", "Track Pt upto 2GeV",100,0,2.0);
+    trackPtOver10GeVH_ = ibook.book1D("trackPtOver10GeV","Track Pt greater than 10 GeV",100,0,100.0);
     trackPterrH_ = ibook.book1D("trackPterr", "Track Pt Error",100,0.0,100.0);
     trackqOverpH_ = ibook.book1D("trackqOverp", "q Over p",40,-10.0,10.0);
     trackqOverperrH_ = ibook.book1D("trackqOverperr","q Over p Error",50,0.0,25.0);
@@ -246,49 +246,39 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
     trackChi2H_ = ibook.book1D("trackChi2", "Chi2",100,0.0,100.0);
     tracknDOFH_ = ibook.book1D("tracknDOF", "nDOF",100,0.0,100.0);
     trackChi2ProbH_ = ibook.book1D("trackChi2Prob", "Chi2prob",50,0.0,1.0);
-    //trackChi2ProbTestH_ = ibook.book1D("trackChi2ProbTest", "Chi2prob test",50,0.0,1.0);    
-    //trackChi2ProbGtCutH_ = ibook.book1D("trackChi2ProbGtCut", "Chi2prob > 0.02",50,0.0,1.0);
-    /*trackChi2ProbGtLCut1H_ = ibook.book1D("trackChi2ProbGtLCut1", "Chi2prob > 0.015",50,0.0,1.0);
-    trackChi2ProbGtLCut2H_ = ibook.book1D("trackChi2ProbGtLCut2", "Chi2prob > 0.010",50,0.0,1.0);
-    trackChi2ProbGtLCut3H_ = ibook.book1D("trackChi2ProbGtLCut3", "Chi2prob > 0.005",50,0.0,1.0);
-    trackChi2ProbGtLCut4H_ = ibook.book1D("trackChi2ProbGtLCut4", "Chi2prob > 0.002",50,0.0,1.0);
-    trackChi2ProbZoomedH_ = ibook.book1D("trackChi2ProbZoomed", "Chi2prob zoomed",20,0.0,0.04);
-    trackChi2Prob_ptGt3H_ = ibook.book1D("trackChi2Prob_ptGt3", "Chi2prob for Pt gt 3",50,0.0,1.0);
-    trackChi2Prob_ptGt10H_ = ibook.book1D("trackChi2Prob_ptGt10", "Chi2prob for Pt gt 10",50,0.0,1.0);
-    trackChi2Prob_LHlt8H_ = ibook.book1D("trackChi2Prob_LHlt8", "Chi2prob for nLostHits < 8",50,0.0,1.0);*/
     trackChi2oNDFH_ = ibook.book1D("trackChi2oNDF", "Chi2oNDF",100,0.0,100.0);
     trackd0H_ = ibook.book1D("trackd0", "Track d0",100,-1,1);
     trackChi2bynDOFH_ = ibook.book1D("trackChi2bynDOF", "Chi2 Over nDOF",100,0.0,10.0);
-    trackalgoH_ = ibook.book1D("trackalgo", "Track Algo",46,0.0,46.0);
-    trackorigalgoH_ = ibook.book1D("trackorigalgo", "Track Original Algo",46,0.0,46.0);
-    trackStoppingSourceH_ = ibook.book1D("trackstoppingsource", "Track Stopping Source",12,0.0,12.0);
+    trackalgoH_ = ibook.book1D("trackalgo", "Track Algo",50,0.0,50.0);
+    trackorigalgoH_ = ibook.book1D("trackorigalgo", "Track Original Algo",50,0.0,50.0);
     DistanceOfClosestApproachToPVH_ = ibook.book1D("DistanceOfClosestApproachToPV", "DistanceOfClosestApproachToPV",1000,-1.0,1.0);
+    DistanceOfClosestApproachToPVVsPtH_ = ibook.bookProfile("DistanceOfClosestApproachToPVVsPt", "DistanceOfClosestApproachToPVVsPt",100,0.,100.,0.0,0.0,"g");
+    DistanceOfClosestApproachToPVVsEtaH_ = ibook.bookProfile("DistanceOfClosestApproachToPVVsEta", "DistanceOfClosestApproachToPVVsEta",60,-3.,3.,0.0,0.0,"g");
     DistanceOfClosestApproachToPVVsPhiH_ = ibook.bookProfile("DistanceOfClosestApproachToPVVsPhi", "DistanceOfClosestApproachToPVVsPhi",100,-3.5,3.5,0.0,0.0,"g");
     xPointOfClosestApproachVsZ0wrtPVH_ = ibook.bookProfile("xPointOfClosestApproachVsZ0wrtPV", "xPointOfClosestApproachVsZ0wrtPV",120,-60,60,0.0,0.0,"g");
     yPointOfClosestApproachVsZ0wrtPVH_ = ibook.bookProfile("yPointOfClosestApproachVsZ0wrtPV", "yPointOfClosestApproachVsZ0wrtPV",120,-60,60,0.0,0.0,"g");
     
+    ip2dToPVH_ = ibook.book1D("ip2dToPV", "IP in 2d To PV",1000,-1.0,1.0);
+    iperr2dToPVH_ = ibook.book1D("iperr2dToPV", "IP error in 2d To PV",50,0,4);
+
     ip3dToPVH_ = ibook.book1D("ip3dToPV", "IP in 3d To PV",200,-20,20);
     iperr3dToPVH_ = ibook.book1D("iperr3dToPV", "IP error in 3d To PV",100,0,5);
-    //    iperr3dToPVEta1H_ = ibook.book1D("iperr3dToPVEta1", "IP error in 3d To PV for 0 < |#eta| <= 1.0",100,0,5);
-    //iperr3dToPVEta2H_ = ibook.book1D("iperr3dToPVEta2", "IP error in 3d To PV for 1.0 < |#eta| < 1.5",100,0,5);
-    //iperr3dToPVEta3H_ = ibook.book1D("iperr3dToPVEta3", "IP error in 3d To PV for 1.5 < |#eta| < 3.5",100,0,5);
-    
-    //iperr3dToPVGtChi2CutH_ = ibook.book1D("iperr3dToPVGtChi2Cut", "IP error in 3d To PV for chi2prob > 0.02",100,0,5);
-    iperr3dToPVWtH_ = ibook.book1D("iperr3dToPVWt", "IP error in 3d To PV",100,0,5);
     sip3dToPVH_ = ibook.book1D("sip3dToPV", "IP significance in 3d To PV",200,-10,10);
     sip2dToPVH_ = ibook.book1D("sip2dToPV", "IP significance in 2d To PV",200,-10,10);
-    //sip2dToPVEta1H_ = ibook.book1D("sip2dToPVEta1", "SIP in 2D To PV for 0 < |#eta| <= 1.0",200,-10,10);
-    //sip2dToPVEta2H_ = ibook.book1D("sip2dToPVEta2", "SIP in 2D To PV for 1.0 < |#eta| < 1.5",200,-10,10);
-    //sip2dToPVEta3H_ = ibook.book1D("sip2dToPVEta3", "SIP in 2D To PV for 1.5 < |#eta| < 3.5",200,-10,10);
-
-    //    sip2dToPVGtChi2CutH_ = ibook.book1D("sip2dToPVGtChi2Cut", "IP significance in 2d To PV for chi2prob > 0.02",200,-10,10);
-    sip2dToPVWtH_ = ibook.book1D("sip2dToPVWt", "IP significance in 2d To PV",200,-10,10);
     sipDxyToPVH_ = ibook.book1D("sipDxyToPV", "IP significance in dxy To PV",100,-10,10);
     sipDzToPVH_ = ibook.book1D("sipDzToPV", "IP significance in dz To PV",100,-10,10);
 
-    nallHitsH_ = ibook.book1D("nallHits", "No. of All Hits",60,-0.5,59.5);
-    ntrackerHitsH_ = ibook.book1D("ntrackerHits", "No. of Tracker Hits",60,-0.5,59.5);
-    
+    ip2dToBSH_ = ibook.book1D("ip2dToBS", "IP in 2d To BS",1000,-1.,1.);//Beamspot
+    sip2dToBSH_ = ibook.book1D("sip2dToBS", "IP significance in 2d To BS",200,-10,10);
+  
+    dcaForPt4to5H_ = ibook.book1D("dcaForPt4to5", "DCA To PV for pt 4 to 5 GeV",1000,-1.0,1.0);
+    dcaForPt14to15H_ = ibook.book1D("dcaForPt14to15", "DCA To PV for pt 14 to 15 GeV",1000,-1.0,1.0);
+    dcaForPt49to50H_ = ibook.book1D("dcaForPt49to50", "DCA To PV for pt 49 to 50 GeV",1000,-1.0,1.0);
+
+    ip2dForPt4to5H_ = ibook.book1D("ip2dForPt4to5", "IP in 2d To PV for pt 4 to 5 GeV",1000,-1.0,1.0); // IPtools
+    ip2dForPt14to15H_ = ibook.book1D("ip2dForPt14to15", "IP in 2d To PV for pt 14 to 15 GeV",1000,-1.0,1.0);
+    ip2dForPt49to50H_ = ibook.book1D("ip2dForPt49to50", "IP in 2d To PV for pt 49 to 50 GeV",1000,-1.0,1.0);
+
     nvalidTrackerHitsH_ = ibook.book1D("nvalidTrackerhits", "No. of Valid Tracker Hits",47,-0.5,46.5);
     nvalidPixelHitsH_ = ibook.book1D("nvalidPixelHits", "No. of Valid Hits in Pixel",8,-0.5,7.5);
     nvalidPixelBHitsH_ = ibook.book1D("nvalidPixelBarrelHits", "No. of Valid Hits in Pixel Barrel",6,-0.5,5.5);
@@ -322,7 +312,7 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
     nlostHitsH_ = ibook.book1D("nlostHits", "No. of Lost Hits",10,-0.5,9.5);
 
     beamSpotXYposH_ = ibook.book1D("beamSpotXYpos", "XY position of beam spot",40,-4.0,4.0);
-    beamSpotXYposerrH_ = ibook.book1D("beamSpotXYposerr", "Error in XY position of beam spot",20,0.0,4.0);
+    beamSpotXYposerrH_ = ibook.book1D("beamSpotXYposerr", "Error in XY position of beam spot",50,0.0,4.0);
     beamSpotZposH_ = ibook.book1D("beamSpotZpos", "Z position of beam spot",100,-20.0,20.0);
     beamSpotZposerrH_ = ibook.book1D("beamSpotZposerr", "Error in Z position of beam spot", 50, 0.0, 5.0);
 
@@ -338,7 +328,7 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
     nMissingOuterHitBH_ = ibook.book1D("nMissingOuterHitB", "No. missing outer hit per Track in Barrel", 11, -0.5, 10.5);
     nMissingOuterHitEH_ = ibook.book1D("nMissingOuterHitE", "No. missing outer hit per Track in Endcap", 11, -0.5, 10.5);
 
-    /*    residualXPBH_ = ibook.book1D("residualXPixelBarrel", "Residual in X in Pixel Barrel", 100, -0.1, 0.1);
+    residualXPBH_ = ibook.book1D("residualXPixelBarrel", "Residual in X in Pixel Barrel", 100, -0.1, 0.1);
     residualXPEH_ = ibook.book1D("residualXPixelEndcap", "Residual in X in Pixel Endcap", 100, -0.04, 0.04);
     residualXTIBH_ = ibook.book1D("residualXStripTIB", "Residual in X in Strip TIB", 100, -0.05, 0.05);
     residualXTOBH_ = ibook.book1D("residualXStripTOB", "Residual in X in Strip TOB", 100, -0.04, 0.04);
@@ -349,7 +339,7 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
     residualYTIBH_ = ibook.book1D("residualYStripTIB", "Residual in Y in Strip TIB", 100, -4., 4.);
     residualYTOBH_ = ibook.book1D("residualYStripTOB", "Residual in Y in Strip TOB", 100, -4., 4.);
     residualYTECH_ = ibook.book1D("residualYStripTEC", "Residual in Y in Strip TEC", 100, -4., 4.);
-    residualYTIDH_ = ibook.book1D("residualYStripTID", "Residual in Y in Strip TID", 100, -4., 4.);*/
+    residualYTIDH_ = ibook.book1D("residualYStripTID", "Residual in Y in Strip TID", 100, -4., 4.);
 
     nTracksH_ = ibook.book1D("nTracks", "No. of Tracks", 300, -0.5, 2999.5);
   }
@@ -567,64 +557,29 @@ void StandaloneTrackMonitor::bookHistograms(DQMStore::IBooker &ibook, edm::Run c
 					   TrackEtaHistoPar.getParameter<int32_t>("Xbins"),
 					   TrackEtaHistoPar.getParameter<double>("Xmin"),
 					   TrackEtaHistoPar.getParameter<double>("Xmax"),0.0,0.0,"g");
+
   trackChi2oNDFVsEtaH_ = ibook.bookProfile("trackChi2oNDFVsEta", "chi2/ndof of Tracks Vs Eta",
 				      TrackEtaHistoPar.getParameter<int32_t>("Xbins"),
 				      TrackEtaHistoPar.getParameter<double>("Xmin"),
 				      TrackEtaHistoPar.getParameter<double>("Xmax"),0.0,0.0,"g");
+
   trackChi2oNDFVsPhiH_ = ibook.bookProfile("trackChi2oNDFVsPhi", "chi2/ndof of Tracks Vs Phi",
 				      TrackEtaHistoPar.getParameter<int32_t>("Xbins"),
 				      TrackEtaHistoPar.getParameter<double>("Xmin"),
 				      TrackEtaHistoPar.getParameter<double>("Xmax"),0.0,0.0,"g");
+  
+  trackChi2probVsEtaH_ = ibook.bookProfile("trackChi2probVsEta", "chi2 probability of Tracks Vs Eta",
+				      TrackEtaHistoPar.getParameter<int32_t>("Xbins"),
+				      TrackEtaHistoPar.getParameter<double>("Xmin"),
+				      TrackEtaHistoPar.getParameter<double>("Xmax"),0.0,0.0,"g");
 
-    trackChi2probVsEtaH_ = ibook.bookProfile("trackChi2probVsEta", "chi2 probability of Tracks Vs Eta",TrackEtaHistoPar.getParameter<int32_t>("Xbins"),
-TrackEtaHistoPar.getParameter<double>("Xmin"),TrackEtaHistoPar.getParameter<double>("Xmax"),0.0,0.0,"g");
-  trackChi2probVsPhiH_ = ibook.bookProfile("trackChi2probVsPhi", "chi2 probability of Tracks Vs Phi",TrackEtaHistoPar.getParameter<int32_t>("Xbins"),
-TrackEtaHistoPar.getParameter<double>("Xmin"),TrackEtaHistoPar.getParameter<double>("Xmax"),0.0,0.0,"g");
-  /*trackChi2probVsPtH_ = ibook.bookProfile("trackChi2probVsPt", "chi2 probability of Tracks Vs Pt", TrackPtHistoPar.getParameter<int32_t>("Xbins"),
- TrackPtHistoPar.getParameter<double>("Xmin"), TrackPtHistoPar.getParameter<double>("Xmax"),0.0,0.0,"g");
-  trackChi2probVsnHitsH_ = ibook.bookProfile("trackChi2probVsnHits", "chi2 probability of Tracks Vs #Hits", 60, -0.5, 59.5, 0.0,0.0,"g");  
-  trackChi2probVsnTrackerHitsH_ = ibook.bookProfile("trackChi2probVsnTrackerHits", "chi2 probability of Tracks Vs #Tracker Hits", 60, -0.5, 59.5, 0.0,0.0,"g");
-  trackChi2probVsEta2DH_ = ibook.book2D("trackChi2probVsEta2D", "chi2 probability of Tracks Vs Eta 2D",TrackEtaHistoPar.getParameter<int32_t>("Xbins"),TrackEtaHistoPar.getParameter<double>("Xmin"),TrackEtaHistoPar.getParameter<double>("Xmax"),50,0.0,1.0);
-  trackChi2probVsPhi2DH_ = ibook.book2D("trackChi2probVsPhi2D", "chi2 probability of Tracks Vs Phi 2D",TrackEtaHistoPar.getParameter<int32_t>("Xbins"),TrackEtaHistoPar.getParameter<double>("Xmin"),TrackEtaHistoPar.getParameter<double>("Xmax"),50,0.0,1.0);
-  trackChi2probVsPt2DH_ = ibook.book2D("trackChi2probVsPt2D", "chi2 probability of Tracks Vs Pt 2D", TrackPtHistoPar.getParameter<int32_t>("Xbins"),TrackPtHistoPar.getParameter<double>("Xmin"), TrackPtHistoPar.getParameter<double>("Xmax"),50,0.0,1.0);
-  trackChi2probVsnHits2DH_ = ibook.book2D("trackChi2probVsnHits2D", "chi2 probability of Tracks Vs #Hits 2D", 60, 0., 60., 50,0.0,1.0);  
-  trackChi2probVsnTrackerHits2DH_ = ibook.book2D("trackChi2probVsnTrackerHits2D", "chi2 probability of Tracks Vs #Tracker Hits 2D", 60, 0., 60.0, 50,0.0,1.0);
-  trackChi2probVsnValidHits2DH_ = ibook.book2D("trackChi2probVsnValidHits2D", "chi2 probability of Tracks Vs #Valid Hits 2D", 47, 0., 47., 50,0.0,1.0);  
-  trackChi2probVsnLostHits2DH_ = ibook.book2D("trackChi2probVsnLostHits2D", "chi2 probability of Tracks Vs #Lost Hits 2D", 15, 0., 15., 50,0.0,1.0);  
-  trackChi2probVsnMissingInnerHits2DH_ = ibook.book2D("trackChi2probVsnMissingInnerHits2D", "chi2 probability of Tracks Vs #Missing Inner Hits 2D", 12, 0., 12., 50,0.0,1.0);  
-  trackChi2probVsnMissingOuterHits2DH_ = ibook.book2D("trackChi2probVsnMissingOuterHits2D", "chi2 probability of Tracks Vs #Missing Outer Hits 2D", 22, 0., 22., 50,0.0,1.0);  
-  trackChi2probVsAlgo2DH_ = ibook.book2D("trackChi2probVsAlgo2D", "chi2 probability of Tracks Vs track algo 2D", 46, 0., 46., 50,0.0,1.0);  
-  trackChi2probVsOrigAlgo2DH_ = ibook.book2D("trackChi2probVsOrigAlgo2D", "chi2 probability of Tracks Vs track original algo 2D", 46, 0., 46., 50,0.0,1.0);  
-  trackChi2probVsStoppingSource2DH_ = ibook.book2D("trackChi2probVsStoppingSource2D", "chi2 probability of Tracks Vs track stopping source 2D", 12, 0., 12., 50,0.0,1.0);  */
+  trackChi2probVsPhiH_ = ibook.bookProfile("trackChi2probVsPhi", "chi2 probability of Tracks Vs Phi",
+				      TrackEtaHistoPar.getParameter<int32_t>("Xbins"),
+				      TrackEtaHistoPar.getParameter<double>("Xmin"),
+				      TrackEtaHistoPar.getParameter<double>("Xmax"),0.0,0.0,"g");
+  
+  
 
-  trackIperr3dVsEtaH_ = ibook.bookProfile("trackIperr3dVsEta", "ip3d error of Tracks Vs Eta",80,-4.,4.,0.0,0.0,"g");
-  /*  trackIperr3dVsPtH_ = ibook.bookProfile("trackIperr3dVsPt", "ip3d error of Tracks Vs Pt", TrackPtHistoPar.getParameter<int32_t>("Xbins"),
- TrackPtHistoPar.getParameter<double>("Xmin"), TrackPtHistoPar.getParameter<double>("Xmax"),0.0,0.0,"g");
-  trackIperr3dVsChi2probH_ = ibook.bookProfile("trackIperr3dVsChi2prob", "ip3d error of Tracks Vs chi2prob",50,0.,1.,0.0,0.0,"g");
-  trackIperr3dVsnHitsH_ = ibook.bookProfile("trackIperr3dVsnHits", "ip3d error of Tracks Vs nHits",60,0.,60.,0.0,0.0,"g");
-  trackIperr3dVsnValidHitsH_ = ibook.bookProfile("trackIperr3dVsnValidHits", "ip3d error of Tracks Vs nValidHits",47,0.,47.,0.0,0.0,"g");
-  trackIperr3dVsnLostHitsH_ = ibook.bookProfile("trackIperr3dVsnLostHits", "ip3d error of Tracks Vs nLostHits",15,0.,15.,0.0,0.0,"g");*/
-
-  trackSip2dVsEtaH_ = ibook.bookProfile("trackSip2dVsEta", "sip2d of Tracks Vs Eta",80,-4.,4.,0.0,0.0,"g");
-  /*trackSip2dVsPtH_ = ibook.bookProfile("trackSip2dVsPt", "sip2d of Tracks Vs Pt", TrackPtHistoPar.getParameter<int32_t>("Xbins"),TrackPtHistoPar.getParameter<double>("Xmin"), TrackPtHistoPar.getParameter<double>("Xmax"),0.0,0.0,"g");
-  trackSip2dVsChi2probH_ = ibook.bookProfile("trackSip2dVsChi2prob", "sip2d of Tracks Vs chi2prob",50,0.,1.,0.0,0.0,"g");
-  trackSip2dVsnHitsH_ = ibook.bookProfile("trackSip2dVsnHits", "sip2d of Tracks Vs nHits",60,0.,60.,0.0,0.0,"g");
-  trackSip2dVsnValidHitsH_ = ibook.bookProfile("trackSip2dVsnValidHits", "sip2d of Tracks Vs nValidHits",47,0.,47.,0.0,0.0,"g");
-  trackSip2dVsnLostHitsH_ = ibook.bookProfile("trackSip2dVsnLostHits", "sip2d of Tracks Vs nLostHits",15,0.,15.,0.0,0.0,"g");*/
-
-  trackIperr3dVsEta2DH_ = ibook.book2D("trackIperr3dVsEta2D", "ip3d error of Tracks Vs Eta 2d",80,-4.,4.,100,0.,5.);
-  //trackIperr3dVsPt2DH_ = ibook.book2D("trackIperr3dVsPt2D", "ip3d error of Tracks Vs Pt 2d", TrackPtHistoPar.getParameter<int32_t>("Xbins"),TrackPtHistoPar.getParameter<double>("Xmin"), TrackPtHistoPar.getParameter<double>("Xmax"),100,0.,5.);
-  trackIperr3dVsChi2prob2DH_ = ibook.book2D("trackIperr3dVsChi2prob2D", "ip3d error of Tracks Vs chi2prob 2d",50,0.,1.,100,0.,5.);
-  //trackIperr3dVsnHits2DH_ = ibook.book2D("trackIperr3dVsnHits2D", "ip3d error of Tracks Vs nHits 2d",60,0.,60.,100,0.,5.);
-  // trackIperr3dVsnValidHits2DH_ = ibook.book2D("trackIperr3dVsnValidHits2D", "ip3d error of Tracks Vs nValidHits 2d",47,0.,47.,100,0.,5.);
-  //trackIperr3dVsnLostHits2DH_ = ibook.book2D("trackIperr3dVsnLostHits2D", "ip3d error of Tracks Vs nLostHits 2d",15,0.,15.,100,0.,5.);
-
-  trackSip2dVsEta2DH_ = ibook.book2D("trackSip2dVsEta2D", "sip2d of Tracks Vs Eta 2d",80,-4.,4.,200,-10.,10.);
-  //  trackSip2dVsPt2DH_ = ibook.book2D("trackSip2dVsPt2D", "sip2d of Tracks Vs Pt 2d", TrackPtHistoPar.getParameter<int32_t>("Xbins"),TrackPtHistoPar.getParameter<double>("Xmin"), TrackPtHistoPar.getParameter<double>("Xmax"),200,-10.,10.);
-  trackSip2dVsChi2prob2DH_ = ibook.book2D("trackSip2dVsChi2prob2D", "sip2d of Tracks Vs chi2prob 2d",50,0.,1.,200,-10.,10.);
-  //trackSip2dVsnHits2DH_ = ibook.book2D("trackSip2dVsnHits2D", "sip2d of Tracks Vs nHits 2d",60,0.,60.,200,-10.,10.);
-  //trackSip2dVsnValidHits2DH_ = ibook.book2D("trackSip2dVsnValidHits2D", "sip2d of Tracks Vs nValidHits 2d",47,0.,47.,200,-10.,10.);
-  // trackSip2dVsnLostHits2DH_ = ibook.book2D("trackSip2dVsnLostHits2D", "sip2d of Tracks Vs nLostHits 2d",15,0.,15.,200,-10.,10.);
 
   // On and off-track cluster properties
   hOnTrkClusChargeThinH_ = ibook.book1D("hOnTrkClusChargeThin", "On-track Cluster Charge (Thin Sensor)", 100, 0, 1000);
@@ -684,8 +639,7 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
   iEvent.getByToken(trackToken_, tracks);
   if (!tracks.isValid()) std::cerr << "TrackCollection for input tag: " << trackTag_ << " not found!!" << std::endl;
 
-  std::cout << "#tracks : " << tracks->size() << std::endl;
-    //std::cout << "DEBU 5" << std::endl;  
+  //std::cout << "DEBU 5" << std::endl;  
   // Access PU information
   double wfac = 1.0;  // for data
   if (!iEvent.isRealData()) {
@@ -724,7 +678,7 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
   
   //std::cout << "DEBU 7" << std::endl;  
   // Get MVA and quality mask collections
-  /*  std::vector<const MVACollection*> mvaCollections;
+  std::vector<const MVACollection*> mvaCollections;
   std::vector<const QualityMaskCollection*> qualityMaskCollections;
   for (const auto& tokenTpl : mvaQualityTokens_) {
     edm::Handle<MVACollection> hmva;
@@ -741,7 +695,6 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
       //      std::cerr << "Track MVA related handles not accessible!" << std::endl;
     }
   }
-
   
   //std::cout << "DEBU 8" << std::endl;  
   edm::Handle<edm::View<reco::Track> > htracks;
@@ -790,70 +743,26 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
   else {
     //    std::cerr << "Track collection for " << mvaTrackTag_ << " not found!" << std::endl;
   }
-  */
   //std::cout << "DEBU 9" << std::endl;  
   int ntracks = 0;
-
-  //int chi2it = 0;
-  //int chi2itGt = 0;
-  //int chi2itLt = 0;
   if (tracks.isValid()) {
     edm::LogInfo("StandaloneTrackMonitor") << "Total # of Tracks: " << tracks->size();
     if (verbose_) edm::LogInfo("StandaloneTrackMonitor") <<"Total # of Tracks: " << tracks->size();
     reco::Track::TrackQuality quality = reco::Track::qualityByName(trackQuality_);
     if (verbose_) std::cout <<"Total # of Tracks: " << tracks->size() << std::endl;
 
- 
     for (auto const& track : *tracks) {
       if (!track.quality(quality)) continue;
       ++ntracks;     
  
       double eta = track.eta();
-      std::cout << "track eta : " << eta << std::endl;
+      //      std::cout << "track eta : " << eta << std::endl;
       double theta = track.theta();
       double phi = track.phi();
       double pt = track.pt();
-      //      if (pt < 10.0) continue;
-      std::cout << "track pt : " << pt << std::endl;
-      std::cout << "track p : " << track.p() << std::endl;
-      /// alcareco
-      ////            if (pt < 2.) continue;// sm alca
-      //if (pt < 0.65) continue;
-      //if (eta < -3.5 || eta > 3.5) continue;
-      //if (track.p() < 1.5) continue;
-      
 
       const reco::HitPattern& hitp = track.hitPattern();
-      double nAllHits = hitp.numberOfAllHits(reco::HitPattern::TRACK_HITS);
-      double nAllTrackerHits = hitp.numberOfAllTrackerHits(reco::HitPattern::TRACK_HITS);
-      
-      //if (nAllHits < 7) continue; //alcareco
-
-      std::cout << "track #trackerhits : " << nAllTrackerHits << std::endl;
-
-      
-
-
-      // loop over the hits of the track.
-      int nHitsBPixL1 = 0;
-      for (int i = 0; i < hitp.numberOfAllHits(reco::HitPattern::TRACK_HITS); i++) {
-	uint32_t hit = hitp.getHitPattern(reco::HitPattern::TRACK_HITS, i);
-	// if the hit is valid and in pixel barrel, print out the layer
-	if (hitp.validHitFilter(hit) && hitp.pixelBarrelHitFilter(hit)){
-	  //	  std::cout << "valid hit found in pixel barrel layer : "<< hitp.getLayer(hit) << std::endl;
-	  if (hitp.getLayer(hit) == 1) {
-	    //std::cout << "valid hit found in pixel barrel layer 1 "<< std::endl;
-	    ++nHitsBPixL1;
-	  }
-	}
-      }
-      //std::cout << "nHitsBPixL1 : "<< nHitsBPixL1 << std::endl;
-      //if (nHitsBPixL1 < 1) continue;
-      //std::cout << "nHitsBPixL1 after cut: "<< nHitsBPixL1 << std::endl;
-      
-
       double nValidTrackerHits = hitp.numberOfValidTrackerHits();
-      //      std::cout << "nValidTrackerHits : " << nValidTrackerHits << std::endl;
       double nValidPixelHits = hitp.numberOfValidPixelHits();
       double nValidPixelBHits = hitp.numberOfValidPixelBarrelHits();
       double nValidPixelEHits = hitp.numberOfValidPixelEndcapHits();
@@ -926,12 +835,12 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
 
 
       if (abs(eta) <= 1.4) {
-	nMissingInnerHitBH_->Fill(missingInnerHit, wfac);
-	nMissingOuterHitBH_->Fill(missingOuterHit, wfac);
+	nMissingInnerHitBH_->Fill(missingInnerHit);
+	nMissingOuterHitBH_->Fill(missingOuterHit);
       }
       else {
-	nMissingInnerHitEH_->Fill(missingInnerHit, wfac);
-        nMissingOuterHitEH_->Fill(missingOuterHit, wfac);
+	nMissingInnerHitEH_->Fill(missingInnerHit);
+        nMissingOuterHitEH_->Fill(missingOuterHit);
       }
 
       // Attention !! Residual is only for RECO dataset
@@ -1031,7 +940,7 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
       //std::cout << "DEBU 12" << std::endl;  
       if (haveAllHistograms_) {
 	double etaError = track.etaError();
-	//double thetaError = track.thetaError();
+	double thetaError = track.thetaError();
 	double phiError = track.phiError();
 	double p = track.p();
 	double ptError = track.ptError();
@@ -1052,12 +961,8 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
 	double vx = track.vx();
 	double vy = track.vy();
 	double vz = track.vz();
-	//// algorithm
 	unsigned int track_algo = track.algo();
 	unsigned int track_origalgo = track.originalAlgo();
-	// stopping source
-	int ssmax = trackStoppingSourceH_->getNbinsX();
-	double stop = track.stopReason() > ssmax ? double(ssmax-1) : static_cast<double>(track.stopReason());
  	double distanceOfClosestApproachToPV = track.dxy(pv.position());
 	double xPointOfClosestApproachwrtPV = track.vx()-pv.position().x();
 	double yPointOfClosestApproachwrtPV = track.vy()-pv.position().y();
@@ -1125,6 +1030,8 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
 	h_pullDz[w]->Fill(dzres);
 	h_pullK[w]->Fill(kres);
 	*/
+
+	
 	double ip3dToPV = 0 , iperr3dToPV = 0, sip3dToPV = 0, sip2dToPV = 0;
 	GlobalVector dir(track.px(), track.py(), track.pz());
 	std::pair<bool, Measurement1D> ip3d = IPTools::signedImpactParameter3D(transTrack, dir, pv);
@@ -1138,75 +1045,43 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
 	  //std::cout << "iperr3dtopv : " << iperr3dToPV << std::endl;
 	}
 	
-	if(ip2d.first) sip2dToPV = ip2d.second.value()/ip2d.second.error();
+	double ip2dToPV = 0 , iperr2dToPV = 0;
+	if(ip2d.first) {
+	  ip2dToPV = ip2d.second.value();
+	  iperr2dToPV = ip2d.second.error();
+	  sip2dToPV = ip2d.second.value()/ip2d.second.error();}
         double sipDxyToPV = track.dxy(pv.position())/track.dxyError();
-	double sipDzToPV = track.dz(pv.position())/track.dzError();				             
+	double sipDzToPV = track.dz(pv.position())/track.dzError();	  
+		             
 	
 	// Fill the histograms
 	trackEtaH_->Fill(eta, wfac);
 	trackEtaerrH_->Fill(etaError, wfac);
-	//trackCosThetaH_->Fill(std::cos(theta), wfac);
-	//trackThetaerrH_->Fill(thetaError, wfac);
+	trackCosThetaH_->Fill(std::cos(theta), wfac);
+	trackThetaerrH_->Fill(thetaError, wfac);
 	trackPhiH_->Fill(phi, wfac);
 	trackPhierrH_->Fill(phiError, wfac);
 	trackPH_->Fill(p, wfac);
 	trackPtH_->Fill(pt, wfac);
-	//	if (pt <= 2) trackPtUpto2GeVH_->Fill(pt, wfac);
-	//if (pt >= 10) trackPtOver10GeVH_->Fill(pt, wfac);
+	if (pt <= 2) trackPtUpto2GeVH_->Fill(pt, wfac);
+	if (pt >= 10) trackPtOver10GeVH_->Fill(pt, wfac);
 	trackPterrH_->Fill(ptError, wfac);
 	trackqOverpH_->Fill(qoverp, wfac);
 	trackqOverperrH_->Fill(qoverpError, wfac);
 	trackChargeH_->Fill(charge, wfac);
 	trackChi2H_->Fill(chi2, wfac);
-	//std::cout << "chi2 prob without cut : " << chi2prob << std::endl;
-	//++chi2it;
 	trackChi2ProbH_->Fill(chi2prob, wfac);
-	//trackChi2ProbTestH_->Fill(chi2prob, wfac);
-	/*if (chi2prob >= 0.02){
-	  trackChi2ProbGtCutH_->Fill(chi2prob, wfac);
-	  //std::cout << "chi2 prob Greater than cut : " << chi2prob << std::endl;
-	  //++chi2itGt;
-	}
-	else {
-	  //std::cout << "chi2 prob less than cut : " << chi2prob << std::endl;
-  	  //++chi2itLt;
-	  }*/
-	/*	if (chi2prob >= 0.015) trackChi2ProbGtLCut1H_->Fill(chi2prob, wfac);
-	if (chi2prob >= 0.010) trackChi2ProbGtLCut2H_->Fill(chi2prob, wfac);
-	if (chi2prob >= 0.005) trackChi2ProbGtLCut3H_->Fill(chi2prob, wfac);
-	if (chi2prob >= 0.002) trackChi2ProbGtLCut4H_->Fill(chi2prob, wfac);
-
-	if (chi2prob <= 0.04)trackChi2ProbZoomedH_->Fill(chi2prob, wfac);
-	if (pt >= 3.) trackChi2Prob_ptGt3H_->Fill(chi2prob, wfac);
-	if (pt >= 10.) trackChi2Prob_ptGt10H_->Fill(chi2prob, wfac);
-	if (nLostTrackerHits < 8) trackChi2Prob_LHlt8H_->Fill(chi2prob, wfac);*/
 	trackChi2oNDFH_->Fill(chi2oNDF, wfac);
 	trackd0H_->Fill(trkd0, wfac);
         tracknDOFH_->Fill(ndof, wfac);
 	trackChi2bynDOFH_->Fill(chi2/ndof, wfac);
 	trackalgoH_->Fill(track_algo, wfac);
 	trackorigalgoH_->Fill(track_origalgo, wfac);
-	trackStoppingSourceH_->Fill(stop, wfac);
 	trackChi2oNDFVsEtaH_->Fill(eta, chi2oNDF);
 	trackChi2oNDFVsPhiH_->Fill(phi, chi2oNDF);
-	/*	trackChi2probVsEtaH_->Fill(eta, chi2prob);
+	trackChi2probVsEtaH_->Fill(eta, chi2prob);
 	trackChi2probVsPhiH_->Fill(phi, chi2prob);
-	trackChi2probVsPtH_->Fill(pt, chi2prob);
-	trackChi2probVsEta2DH_->Fill(eta, chi2prob);
-	trackChi2probVsPhi2DH_->Fill(phi, chi2prob);
-	trackChi2probVsPt2DH_->Fill(pt, chi2prob);
-	trackChi2probVsnHitsH_->Fill(nAllHits, chi2prob);	
-	trackChi2probVsnHits2DH_->Fill(nAllHits, chi2prob);	
-	trackChi2probVsnTrackerHitsH_->Fill(nAllTrackerHits, chi2prob);	
-	trackChi2probVsnTrackerHits2DH_->Fill(nAllTrackerHits, chi2prob);	
-	trackChi2probVsnValidHits2DH_->Fill(nValidTrackerHits, chi2prob);	
-	trackChi2probVsnLostHits2DH_->Fill(nLostTrackerHits, chi2prob);	
-	trackChi2probVsnMissingInnerHits2DH_->Fill(missingInnerHit, chi2prob);	
-	trackChi2probVsnMissingOuterHits2DH_->Fill(missingOuterHit, chi2prob);		
-	trackChi2probVsAlgo2DH_->Fill(track_algo, chi2prob);	
-	trackChi2probVsOrigAlgo2DH_->Fill(track_origalgo, chi2prob);
-	trackChi2probVsStoppingSource2DH_->Fill(stop,chi2prob);*/
-
+	
 	nlostHitsH_->Fill(nLostHits, wfac);
 	nlostTrackerHitsH_->Fill(nLostTrackerHits, wfac);
 	
@@ -1219,55 +1094,35 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
 	vertexYposH_->Fill(vy, wfac);
 	vertexZposH_->Fill(vz, wfac);
 	
-        DistanceOfClosestApproachToPVH_->Fill(distanceOfClosestApproachToPV, wfac);
+        DistanceOfClosestApproachToPVH_->Fill(distanceOfClosestApproachToPV);
+	DistanceOfClosestApproachToPVVsPtH_->Fill(pt, distanceOfClosestApproachToPV);
+	DistanceOfClosestApproachToPVVsPtH_->Fill(eta, distanceOfClosestApproachToPV);
 	DistanceOfClosestApproachToPVVsPhiH_->Fill(phi, distanceOfClosestApproachToPV);
 	xPointOfClosestApproachVsZ0wrtPVH_->Fill(positionZ0, xPointOfClosestApproachwrtPV);
 	yPointOfClosestApproachVsZ0wrtPVH_->Fill(positionZ0, yPointOfClosestApproachwrtPV);
 	
-	ip3dToPVH_->Fill(ip3dToPV, wfac);
-	iperr3dToPVH_->Fill(iperr3dToPV, wfac);
-	iperr3dToPVWtH_->Fill(iperr3dToPV, wfac);
-	//if (abs(eta) <= 1.0) iperr3dToPVEta1H_->Fill(iperr3dToPV, wfac);
-	//if (abs(eta) > 1.0 && abs(eta) <= 1.5) iperr3dToPVEta2H_->Fill(iperr3dToPV, wfac);
-	//if (abs(eta) > 1.5 && abs(eta) <= 3.5) iperr3dToPVEta3H_->Fill(iperr3dToPV, wfac);
-	sip3dToPVH_->Fill(sip3dToPV, wfac);
-	sip2dToPVH_->Fill(sip2dToPV, wfac);
-	//if (abs(eta) <= 1.0) sip2dToPVEta1H_->Fill(sip2dToPV, wfac);
-	//if (abs(eta) > 1.0 && abs(eta) <= 1.5) sip2dToPVEta2H_->Fill(sip2dToPV, wfac);
-	//if (abs(eta) > 1.5 && abs(eta) <= 3.5) sip2dToPVEta3H_->Fill(sip2dToPV, wfac);
-	sip2dToPVWtH_->Fill(sip2dToPV, wfac);
-	sipDxyToPVH_->Fill(sipDxyToPV, wfac);
-	sipDzToPVH_->Fill(sipDzToPV, wfac);
+	ip2dToPVH_->Fill(ip2dToPV);
+	iperr2dToPVH_->Fill(iperr2dToPV);
+	ip3dToPVH_->Fill(ip3dToPV);
+	iperr3dToPVH_->Fill(iperr3dToPV);
+	sip3dToPVH_->Fill(sip3dToPV);
+	sip2dToPVH_->Fill(sip2dToPV);
+	sipDxyToPVH_->Fill(sipDxyToPV);
+	sipDzToPVH_->Fill(sipDzToPV);
+
+	ip2dToBSH_->Fill(dxy);
+	sip2dToBSH_->Fill(dxy/dxyError);
+
+	// For Long Wang's study : Tracking POG : 15/11/2021
+
+	if (pt > 4 && pt < 5) dcaForPt4to5H_->Fill(distanceOfClosestApproachToPV); // general track.dxy
+	if (pt > 14 && pt < 15) dcaForPt14to15H_->Fill(distanceOfClosestApproachToPV);
+	if (pt > 49 && pt < 50) dcaForPt49to50H_->Fill(distanceOfClosestApproachToPV);
+
+	if (pt > 4 && pt < 5) ip2dForPt4to5H_->Fill(ip2dToPV); // IPtools
+	if (pt > 14 && pt < 15) ip2dForPt14to15H_->Fill(ip2dToPV);
+	if (pt > 49 && pt < 50) ip2dForPt49to50H_->Fill(ip2dToPV);
        	
-	//	if (chi2prob >= 0.02) iperr3dToPVGtChi2CutH_->Fill(iperr3dToPV, wfac);
- 	//if (chi2prob >= 0.02) sip2dToPVGtChi2CutH_->Fill(sip2dToPV, wfac);
-	trackIperr3dVsEta2DH_->Fill(eta, iperr3dToPV, wfac);
-	trackSip2dVsEta2DH_->Fill(eta, sip2dToPV, wfac);
-	trackIperr3dVsChi2prob2DH_->Fill(chi2prob, iperr3dToPV, wfac);	
-	trackSip2dVsChi2prob2DH_->Fill(chi2prob, sip2dToPV, wfac);
-	//trackIperr3dVsPt2DH_->Fill(pt, iperr3dToPV, wfac);
-	//trackSip2dVsPt2DH_->Fill(pt, sip2dToPV, wfac);
-	//trackIperr3dVsnHits2DH_->Fill(nAllHits, iperr3dToPV, wfac);
-	//trackSip2dVsnHits2DH_->Fill(nAllHits, sip2dToPV, wfac);	
-	//trackIperr3dVsnValidHits2DH_->Fill(nValidTrackerHits, iperr3dToPV, wfac);
-	//trackSip2dVsnValidHits2DH_->Fill(nValidTrackerHits, sip2dToPV, wfac);	
-	//trackIperr3dVsnLostHits2DH_->Fill(nLostTrackerHits, iperr3dToPV, wfac);
-	//trackSip2dVsnLostHits2DH_->Fill(nLostTrackerHits, sip2dToPV, wfac);	
-
-	trackIperr3dVsEtaH_->Fill(eta, iperr3dToPV);
-	trackSip2dVsEtaH_->Fill(eta, sip2dToPV);
-	/*trackIperr3dVsChi2probH_->Fill(chi2prob, iperr3dToPV);	
-	trackSip2dVsChi2probH_->Fill(chi2prob, sip2dToPV);
-	trackIperr3dVsPtH_->Fill(pt, iperr3dToPV);
-	trackSip2dVsPtH_->Fill(pt, sip2dToPV);
-	trackIperr3dVsnHitsH_->Fill(nAllHits, iperr3dToPV);
-	trackSip2dVsnHitsH_->Fill(nAllHits, sip2dToPV);	
-	trackIperr3dVsnValidHitsH_->Fill(nValidTrackerHits, iperr3dToPV);
-	trackSip2dVsnValidHitsH_->Fill(nValidTrackerHits, sip2dToPV);	
-	trackIperr3dVsnLostHitsH_->Fill(nLostTrackerHits, iperr3dToPV);
-	trackSip2dVsnLostHitsH_->Fill(nLostTrackerHits, sip2dToPV);*/	
-
-
         double trackerLayersWithMeasurement = hitp.trackerLayersWithMeasurement();
 	double pixelLayersWithMeasurement = hitp.pixelLayersWithMeasurement();
 	double pixelBLayersWithMeasurement = hitp.pixelBarrelLayersWithMeasurement();
@@ -1288,8 +1143,6 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
 	stripTIDLayerwithMeasurementH_->Fill(stripTIDLayersWithMeasurement, wfac);
 	stripTECLayerwithMeasurementH_->Fill(stripTECLayersWithMeasurement, wfac);
 	
-	nallHitsH_->Fill(nAllHits, wfac);
-	ntrackerHitsH_->Fill(nAllTrackerHits, wfac);
 	nvalidTrackerHitsH_->Fill(nValidTrackerHits, wfac);
 	nvalidPixelHitsH_->Fill(nValidPixelHits, wfac);
 	nvalidPixelBHitsH_->Fill(nValidPixelBHits, wfac);
@@ -1373,11 +1226,6 @@ void StandaloneTrackMonitor::analyze(edm::Event const& iEvent, edm::EventSetup c
   else {
     edm::LogError("StandaloneTrackMonitor") << "Error! Failed to get reco::Track collection, " << trackTag_;
   }
-
-  // std::cout << "nTracks : " << ntracks << std::endl;
-  //std::cout << "chi2it for each event : " << chi2it << " : chi2itGt for each event : " << chi2itGt  << " : chi2itLt for each event : "<< chi2itLt << std::endl;
-  //  if (chi2itGt + chi2itLt != chi2it) std::cout << "something wrong after one event!" << std::endl;
-
   if (haveAllHistograms_) nTracksH_->Fill(ntracks, wfac);
   
   // off track cluster properties
@@ -1505,9 +1353,9 @@ void StandaloneTrackMonitor::endLuminosityBlock(edm::LuminosityBlock const& lumi
   //if (lumiBlock.id().run() == 278509) lumivec1.push_back(lumiBlock.id().luminosityBlock());
   //if (lumiBlock.id().run() == 278770) lumivec2.push_back(lumiBlock.id().luminosityBlock());
 }
-
+/*
 void StandaloneTrackMonitor::endJob() {
-  /*
+
   for(std::vector<int>::iterator it = lumivec1.begin(); it != lumivec1.end(); ++it) {
     // std::cout << *it; ... 
     if (lumivec1.size() > 0) std::cout << "lumi for run 278509 >> " << *it << std::endl;
@@ -1519,17 +1367,15 @@ void StandaloneTrackMonitor::endJob() {
     if (lumivec2.size() > 0) std::cout << "lumi for run 278770 >> " << *it << std::endl;
     else continue;
   }
-  */
-  //  std::cout << "total no. of events : " << nevt << std::endl;
-  //  std::cout << "total no. of tracks : " << ntracks << std::endl;
-  //std::cout << "chi2it after all events : " << chi2it << " : chi2itGt after all events : " << chi2itGt  << " : chi2itLt after all events : "<< chi2itLt << std::endl;
-  // if (chi2itGt + chi2itLt != chi2it) std::cout << "something wrong after all events!" << std::endl;
+
+  std::cout << "total no. of events : " << nevt << std::endl;*/
+
   /*
   for (int i=0; i < lumivec1.size(); i++){
     std::cout << "lumi >> " << lumivec1.at(i) << std::endl;
     }*/
 
-}
+//}
 
 
 // Define this as a plug-in

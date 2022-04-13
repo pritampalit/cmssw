@@ -1,22 +1,24 @@
+#ifndef DQM_TrackingMonitorSource_ElectronTrackProducer_h
+#define DQM_TrackingMonitorSource_ElectronTrackProducer_h
 
-#ifndef DQM_TrackingMonitorSource_ZtoEEEventSelector_h
-#define DQM_TrackingMonitorSource_ZtoEEEventSelector_h
+#include <memory>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/stream/EDFilter.h"
+#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Utilities/interface/InputTag.h"	
 
-
-class ZtoEEEventSelector : public edm::stream::EDFilter<> {
+class ElectronTrackProducer : public edm::EDProducer {
 public:
-  explicit ZtoEEEventSelector(const edm::ParameterSet&);
+  explicit ElectronTrackProducer (const edm::ParameterSet&);
+  ~ElectronTrackProducer();
 
-  bool filter(edm::Event&, edm::EventSetup const&) override;
+  virtual void produce(edm::Event& iEvent, edm::EventSetup const& iSetup);
 
 private:
-  // module config parameters
+
+      // ----------member data ---------------------------
   const edm::InputTag electronTag_;
   const edm::InputTag bsTag_;
   const edm::EDGetTokenT<reco::GsfElectronCollection> electronToken_;

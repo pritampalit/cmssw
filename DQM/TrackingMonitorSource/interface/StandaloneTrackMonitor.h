@@ -18,27 +18,27 @@
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
-#include "DataFormats/TrackReco/interface/TrackFwd.h"
-#include "DataFormats/VertexReco/interface/VertexFwd.h"
-#include "DataFormats/BeamSpot/interface/BeamSpot.h"
-#include "DataFormats/Common/interface/DetSetVectorNew.h"
 
+class BeamSpot;
+class TrackCollection;
+class VertexCollection;
 class TrackingRecHit;
-class SiStripCluster;
-class PileupSummaryInfo;
 
 class StandaloneTrackMonitor : public DQMEDAnalyzer {
 public:
   StandaloneTrackMonitor( const edm::ParameterSet& );
+  using MVACollection = std::vector<float>;
+  using QualityMaskCollection = std::vector<unsigned char>;
 
 protected:
 
   void analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) override;
+  void endLuminosityBlock(edm::LuminosityBlock const& lumiSeg, edm::EventSetup const& eSetup);// override;
   void processHit(const TrackingRecHit& recHit, edm::EventSetup const& iSetup, const TrackerGeometry& tkGeom, double wfac=1);
   void processClusters(edm::Event const& iEvent, edm::EventSetup const& iSetup, const TrackerGeometry& tkGeom, double wfac=1);
   void addClusterToMap(uint32_t detid, const SiStripCluster* cluster);
-  void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
+  void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &);
+  void endJob();
 
 private:
 
@@ -56,18 +56,28 @@ private:
   const edm::EDGetTokenT<reco::VertexCollection> vertexToken_;
   const edm::EDGetTokenT<std::vector<PileupSummaryInfo> > puSummaryToken_; 
   const edm::EDGetTokenT<edmNew::DetSetVector<SiStripCluster> > clusterToken_;
-
+  // track MVA
   const std::string trackQuality_;
   const bool doPUCorrection_;
   const bool isMC_;
   const bool haveAllHistograms_;
   const std::string puScaleFactorFile_;
+  const std::vector<std::string> mvaProducers_;
+  const edm::InputTag mvaTrackTag_;
+  edm::EDGetTokenT<edm::View<reco::Track> > mvaTrackToken_;
+  const edm::InputTag tcProducer_;
+  const std::string algoName_;
+
+  int nevt = 0;
+  int chi2it = 0, chi2itGt = 0, chi2itLt = 0;
   const bool verbose_;
+  std::vector<std::tuple<edm::EDGetTokenT<MVACollection>, edm::EDGetTokenT<QualityMaskCollection> > > mvaQualityTokens_;  
+  std::string histname;
 
   MonitorElement* trackEtaH_;
   MonitorElement* trackEtaerrH_;
-  MonitorElement* trackCosThetaH_;
-  MonitorElement* trackThetaerrH_;
+  //MonitorElement* trackCosThetaH_;
+  //MonitorElement* trackThetaerrH_;
   MonitorElement* trackPhiH_;
   MonitorElement* trackPhierrH_;
   MonitorElement* trackPH_;
@@ -80,16 +90,98 @@ private:
   MonitorElement* trackChargeH_;
   MonitorElement* trackChi2H_;
   MonitorElement* tracknDOFH_;
+  MonitorElement* trackChi2ProbH_;
+  //MonitorElement* trackChi2ProbTestH_;
+  //MonitorElement* trackChi2ProbGtCutH_;
+  /*  MonitorElement* trackChi2ProbGtLCut1H_;
+  MonitorElement* trackChi2ProbGtLCut2H_;
+  MonitorElement* trackChi2ProbGtLCut3H_;
+  MonitorElement* trackChi2ProbGtLCut4H_;
+  MonitorElement* trackChi2ProbZoomedH_;
+  MonitorElement* trackChi2Prob_ptGt3H_;
+  MonitorElement* trackChi2Prob_ptGt10H_;
+  MonitorElement* trackChi2Prob_LHlt8H_;*/
+  MonitorElement* trackChi2oNDFH_;
   MonitorElement* trackd0H_;
   MonitorElement* trackChi2bynDOFH_;
+  MonitorElement* trackalgoH_;
+  MonitorElement* trackorigalgoH_;
+  MonitorElement* trackStoppingSourceH_;
 
-  MonitorElement* nlostHitsH_;
+  MonitorElement* DistanceOfClosestApproachToPVH_;
+  MonitorElement* DistanceOfClosestApproachToPVVsPhiH_;
+  MonitorElement* xPointOfClosestApproachVsZ0wrtPVH_;
+  MonitorElement* yPointOfClosestApproachVsZ0wrtPVH_;
+
+  MonitorElement* ip3dToPVH_;
+  MonitorElement* iperr3dToPVH_;
+  //MonitorElement* iperr3dToPVEta1H_;
+  //MonitorElement* iperr3dToPVEta2H_;
+  //MonitorElement* iperr3dToPVEta3H_;
+  //MonitorElement* iperr3dToPVGtChi2CutH_;
+  MonitorElement* iperr3dToPVWtH_;
+  MonitorElement* sip3dToPVH_;
+  MonitorElement* sip2dToPVH_;
+  //MonitorElement* sip2dToPVEta1H_;
+  //MonitorElement* sip2dToPVEta2H_;
+  //MonitorElement* sip2dToPVEta3H_;
+  //MonitorElement* sip2dToPVGtChi2CutH_;
+  MonitorElement* sip2dToPVWtH_;
+  MonitorElement* sipDxyToPVH_;
+  MonitorElement* sipDzToPVH_;
+
+  MonitorElement* nallHitsH_;
+  MonitorElement* ntrackerHitsH_;
+
   MonitorElement* nvalidTrackerHitsH_;
   MonitorElement* nvalidPixelHitsH_;
+  MonitorElement* nvalidPixelBHitsH_;
+  MonitorElement* nvalidPixelEHitsH_;
   MonitorElement* nvalidStripHitsH_;
+  MonitorElement* nvalidTIBHitsH_;
+  MonitorElement* nvalidTOBHitsH_;
+  MonitorElement* nvalidTIDHitsH_;
+  MonitorElement* nvalidTECHitsH_;
+
+  MonitorElement* nlostTrackerHitsH_;
+  MonitorElement* nlostPixelHitsH_;
+  MonitorElement* nlostPixelBHitsH_;
+  MonitorElement* nlostPixelEHitsH_;
+  MonitorElement* nlostStripHitsH_;
+  MonitorElement* nlostTIBHitsH_;
+  MonitorElement* nlostTOBHitsH_;
+  MonitorElement* nlostTIDHitsH_;
+  MonitorElement* nlostTECHitsH_;
+
+  MonitorElement* nMissingInnerHitBH_;
+  MonitorElement* nMissingInnerHitEH_;
+  MonitorElement* nMissingOuterHitBH_;
+  MonitorElement* nMissingOuterHitEH_;
+
+  /*  MonitorElement* residualXPBH_;
+  MonitorElement* residualXPEH_;
+  MonitorElement* residualXTIBH_;
+  MonitorElement* residualXTOBH_;
+  MonitorElement* residualXTIDH_;
+  MonitorElement* residualXTECH_;
+  MonitorElement* residualYPBH_;
+  MonitorElement* residualYPEH_;
+  MonitorElement* residualYTIBH_;
+  MonitorElement* residualYTOBH_;
+  MonitorElement* residualYTIDH_;
+  MonitorElement* residualYTECH_;*/
+
   MonitorElement* trkLayerwithMeasurementH_;
   MonitorElement* pixelLayerwithMeasurementH_;
+  MonitorElement* pixelBLayerwithMeasurementH_;
+  MonitorElement* pixelELayerwithMeasurementH_;
   MonitorElement* stripLayerwithMeasurementH_;
+  MonitorElement* stripTIBLayerwithMeasurementH_;
+  MonitorElement* stripTOBLayerwithMeasurementH_;
+  MonitorElement* stripTIDLayerwithMeasurementH_;
+  MonitorElement* stripTECLayerwithMeasurementH_;
+
+  MonitorElement* nlostHitsH_;
 
   MonitorElement* beamSpotXYposH_;
   MonitorElement* beamSpotXYposerrH_;
@@ -100,13 +192,8 @@ private:
   MonitorElement* vertexYposH_;
   MonitorElement* vertexZposH_;
   MonitorElement* nVertexH_;
+  MonitorElement* nVtxH_;
 
-  MonitorElement* nPixBarrelH_;
-  MonitorElement* nPixEndcapH_;
-  MonitorElement* nStripTIBH_;
-  MonitorElement* nStripTOBH_;
-  MonitorElement* nStripTECH_;
-  MonitorElement* nStripTIDH_;
   MonitorElement* nTracksH_;
 
   // MC only
@@ -115,15 +202,117 @@ private:
   MonitorElement* trueNIntH_;
 
   // Exclusive Quantities
-  MonitorElement* nHitsVspTH_;
-  MonitorElement* nHitsVsnVtxH_;
-  MonitorElement* nHitsVsEtaH_;
-  MonitorElement* nHitsVsCosThetaH_;
-  MonitorElement* nHitsVsPhiH_;
+  MonitorElement* nLostHitByLayerH_;
+  MonitorElement* nLostHitByLayerPixH_;
+  MonitorElement* nLostHitByLayerStripH_;
   MonitorElement* nLostHitsVspTH_;
   MonitorElement* nLostHitsVsEtaH_;
   MonitorElement* nLostHitsVsCosThetaH_;
   MonitorElement* nLostHitsVsPhiH_;
+
+  MonitorElement* nHitsTIBSVsEtaH_;
+  MonitorElement* nHitsTOBSVsEtaH_;
+  MonitorElement* nHitsTECSVsEtaH_;
+  MonitorElement* nHitsTIDSVsEtaH_;
+  MonitorElement* nHitsStripSVsEtaH_;
+
+  MonitorElement* nHitsTIBDVsEtaH_;
+  MonitorElement* nHitsTOBDVsEtaH_;
+  MonitorElement* nHitsTECDVsEtaH_;
+  MonitorElement* nHitsTIDDVsEtaH_;
+  MonitorElement* nHitsStripDVsEtaH_;
+
+  MonitorElement* nValidHitsVspTH_;
+  MonitorElement* nValidHitsVsnVtxH_;
+  MonitorElement* nValidHitsVsEtaH_;
+  MonitorElement* nValidHitsVsCosThetaH_;
+  MonitorElement* nValidHitsVsPhiH_;
+
+  MonitorElement* nValidHitsPixVsEtaH_;
+  MonitorElement* nValidHitsPixBVsEtaH_;
+  MonitorElement* nValidHitsPixEVsEtaH_;
+  MonitorElement* nValidHitsStripVsEtaH_;
+  MonitorElement* nValidHitsTIBVsEtaH_;
+  MonitorElement* nValidHitsTOBVsEtaH_;
+  MonitorElement* nValidHitsTECVsEtaH_;
+  MonitorElement* nValidHitsTIDVsEtaH_;
+
+  MonitorElement* nValidHitsPixVsPhiH_;
+  MonitorElement* nValidHitsPixBVsPhiH_;
+  MonitorElement* nValidHitsPixEVsPhiH_;
+  MonitorElement* nValidHitsStripVsPhiH_;
+  MonitorElement* nValidHitsTIBVsPhiH_;
+  MonitorElement* nValidHitsTOBVsPhiH_;
+  MonitorElement* nValidHitsTECVsPhiH_;
+  MonitorElement* nValidHitsTIDVsPhiH_;
+
+  MonitorElement* nLostHitsPixVsEtaH_;
+  MonitorElement* nLostHitsPixBVsEtaH_;
+  MonitorElement* nLostHitsPixEVsEtaH_;
+  MonitorElement* nLostHitsStripVsEtaH_;
+  MonitorElement* nLostHitsTIBVsEtaH_;
+  MonitorElement* nLostHitsTOBVsEtaH_;
+  MonitorElement* nLostHitsTECVsEtaH_;
+  MonitorElement* nLostHitsTIDVsEtaH_;
+
+  MonitorElement* nLostHitsPixVsPhiH_;
+  MonitorElement* nLostHitsPixBVsPhiH_;
+  MonitorElement* nLostHitsPixEVsPhiH_;
+  MonitorElement* nLostHitsStripVsPhiH_;
+  MonitorElement* nLostHitsTIBVsPhiH_;
+  MonitorElement* nLostHitsTOBVsPhiH_;
+  MonitorElement* nLostHitsTECVsPhiH_;
+  MonitorElement* nLostHitsTIDVsPhiH_;
+
+  MonitorElement* trackChi2oNDFVsEtaH_;
+  MonitorElement* trackChi2oNDFVsPhiH_;
+  MonitorElement* trackChi2probVsEtaH_;
+  MonitorElement* trackChi2probVsPhiH_;
+
+  /*  MonitorElement* trackChi2probVsPtH_;
+  MonitorElement* trackChi2probVsnHitsH_;
+  MonitorElement* trackChi2probVsnTrackerHitsH_;
+  MonitorElement* trackChi2probVsEta2DH_;
+  MonitorElement* trackChi2probVsPhi2DH_;
+  MonitorElement* trackChi2probVsPt2DH_;
+  MonitorElement* trackChi2probVsnHits2DH_;
+  MonitorElement* trackChi2probVsnTrackerHits2DH_;
+  MonitorElement* trackChi2probVsnValidHits2DH_;
+  MonitorElement* trackChi2probVsnLostHits2DH_;
+  MonitorElement* trackChi2probVsnMissingInnerHits2DH_;
+  MonitorElement* trackChi2probVsnMissingOuterHits2DH_;
+
+  MonitorElement* trackChi2probVsAlgo2DH_;
+  MonitorElement* trackChi2probVsOrigAlgo2DH_;
+  MonitorElement* trackChi2probVsStoppingSource2DH_;*/
+
+  MonitorElement* trackIperr3dVsEtaH_;
+  //MonitorElement* trackIperr3dVsPtH_;
+  MonitorElement* trackIperr3dVsChi2probH_;
+  //MonitorElement* trackIperr3dVsnHitsH_;
+  //MonitorElement* trackIperr3dVsnValidHitsH_;
+  //MonitorElement* trackIperr3dVsnLostHitsH_;
+
+  MonitorElement* trackSip2dVsEtaH_;
+  //MonitorElement* trackSip2dVsPtH_;
+  //MonitorElement* trackSip2dVsChi2probH_;
+  //MonitorElement* trackSip2dVsnHitsH_;
+  //MonitorElement* trackSip2dVsnValidHitsH_;
+  //MonitorElement* trackSip2dVsnLostHitsH_;
+
+  MonitorElement* trackIperr3dVsEta2DH_;
+  //MonitorElement* trackIperr3dVsPt2DH_;
+  MonitorElement* trackIperr3dVsChi2prob2DH_;
+  //MonitorElement* trackIperr3dVsnHits2DH_;
+  //MonitorElement* trackIperr3dVsnValidHits2DH_;
+  //MonitorElement* trackIperr3dVsnLostHits2DH_;
+
+  MonitorElement* trackSip2dVsEta2DH_;
+  //MonitorElement* trackSip2dVsPt2DH_;
+  MonitorElement* trackSip2dVsChi2prob2DH_;
+  //MonitorElement* trackSip2dVsnHits2DH_;
+  //MonitorElement* trackSip2dVsnValidHits2DH_;
+  //MonitorElement* trackSip2dVsnLostHits2DH_;
 
   MonitorElement* hOnTrkClusChargeThinH_;
   MonitorElement* hOnTrkClusWidthThinH_;
@@ -135,8 +324,17 @@ private:
   MonitorElement* hOffTrkClusChargeThickH_;
   MonitorElement* hOffTrkClusWidthThickH_;
 
+  std::vector<MonitorElement*> trackMVAs;
+  std::vector<MonitorElement*> trackMVAsHP;
+  std::vector<MonitorElement*> trackMVAsVsPtProfile;
+  std::vector<MonitorElement*> trackMVAsHPVsPtProfile;
+  std::vector<MonitorElement*> trackMVAsVsEtaProfile;
+  std::vector<MonitorElement*> trackMVAsHPVsEtaProfile;
+
   unsigned long long m_cacheID_;
 
+  std::vector<int> lumivec1;
+  std::vector<int> lumivec2;
   std::vector<float> vpu_;
   std::map<uint32_t, std::set<const SiStripCluster*> > clusterMap_;
 };

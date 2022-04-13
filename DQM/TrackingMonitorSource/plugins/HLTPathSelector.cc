@@ -23,13 +23,16 @@ void HLTPathSelector::beginRun(edm::Run const & iRun, edm::EventSetup const& iSe
   if (hltConfig_.init(iRun, iSetup, processName_, changed)) {
     if (changed) {
       edm::LogInfo("HLTPathSelector") << "HLT initialised";
-      hltConfig_.dump("PrescaleTable");
+      if (verbose_) {
+	hltConfig_.dump("Triggers");
+	hltConfig_.dump("PrescaleTable");
+      }
     }
     hltPathsMap_.clear();
     const unsigned int n(hltConfig_.size());
     const std::vector<std::string>& pathList = hltConfig_.triggerNames();
     for (auto path: pathList) {
-      if (!hltPathsOfInterest_.empty()) {
+      if (hltPathsOfInterest_.size()) {
         int nmatch = 0;
         for (auto kt: hltPathsOfInterest_)
           nmatch += TPRegexp(kt).Match(path);
@@ -44,10 +47,11 @@ void HLTPathSelector::beginRun(edm::Run const & iRun, edm::EventSetup const& iSe
       hltPathsMap_[path] = triggerIndex;
     }
   } 
-  else
+  else {
     edm::LogError("HLTPathSelector") 
       << " config extraction failure with process name "
       << processName_;
+  }
 }
 bool HLTPathSelector::filter(edm::Event& iEvent, edm::EventSetup const& iSetup) {
   // get event products
@@ -75,11 +79,18 @@ bool HLTPathSelector::filter(edm::Event& iEvent, edm::EventSetup const& iSetup) 
 
     // Results from TriggerResults product
     if (verbose_)
+      std::cout << "HLTPathSelector" 
+		<< " Trigger path <" << path << "> status:"
+		<< " WasRun=" << triggerResultsHandle_->wasrun(triggerIndex)
+		<< " Accept=" << triggerResultsHandle_->accept(triggerIndex)
+		<< " Error=" << triggerResultsHandle_->error(triggerIndex)
+		<< std::endl;
+    if (verbose_)
       edm::LogInfo("HLTPathSelector") 
-	           << " Trigger path <" << path << "> status:"
-		   << " WasRun=" << triggerResultsHandle_->wasrun(triggerIndex)
-		   << " Accept=" << triggerResultsHandle_->accept(triggerIndex)
-		   << " Error=" << triggerResultsHandle_->error(triggerIndex);
+	<< " Trigger path <" << path << "> status:"
+	<< " WasRun=" << triggerResultsHandle_->wasrun(triggerIndex)
+	<< " Accept=" << triggerResultsHandle_->accept(triggerIndex)
+	<< " Error=" << triggerResultsHandle_->error(triggerIndex);
     
     if (triggerResultsHandle_->wasrun(triggerIndex) && triggerResultsHandle_->accept(triggerIndex)) {
       ++flag;
@@ -93,10 +104,10 @@ bool HLTPathSelector::filter(edm::Event& iEvent, edm::EventSetup const& iSetup) 
   return false;
 }
 void HLTPathSelector::endJob() {
-
+  
   edm::LogInfo("HLTPathSelector") 
-            << setw(32) << "HLT Path"
-	    << setw(9) << "ACCEPT";
+    << setw(32) << "HLT Path"
+    << setw(9) << "ACCEPT";
   for (auto const& jt: tmap_)  
     edm::LogInfo("HLTPathSelector")
       << setw(9) << jt.second; 

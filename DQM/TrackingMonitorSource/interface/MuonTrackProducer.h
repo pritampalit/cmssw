@@ -1,20 +1,25 @@
-#ifndef DQM_TrackingMonitorSource_ZtoMMEventSelector_h
-#define DQM_TrackingMonitorSource_ZtoMMEventSelector_h
+#ifndef DQM_TrackingMonitorSource_MuonTrackProducer_h
+#define DQM_TrackingMonitorSource_MuonTrackProducer_h
+
+#include <memory>
 
 #include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/stream/EDFilter.h"
+#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Utilities/interface/InputTag.h"	
 
-class ZtoMMEventSelector : public edm::stream::EDFilter<> {
+class MuonTrackProducer : public edm::EDProducer {
 public:
-  explicit ZtoMMEventSelector(const edm::ParameterSet&);
+  explicit MuonTrackProducer (const edm::ParameterSet&);
+  ~MuonTrackProducer();
 
-  bool filter(edm::Event&, edm::EventSetup const&) override;
+  virtual void produce(edm::Event& iEvent, edm::EventSetup const& iSetup);
 
 private:
-  bool verbose_;
+
+      // ----------member data ---------------------------
+
   const edm::InputTag muonTag_;
   const edm::InputTag bsTag_;
   const edm::EDGetTokenT<reco::MuonCollection> muonToken_;

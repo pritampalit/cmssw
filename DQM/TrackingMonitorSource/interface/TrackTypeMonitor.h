@@ -18,10 +18,10 @@
 #include "DQMServices/Core/interface/DQMEDAnalyzer.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "DataFormats/VertexReco/interface/VertexFwd.h"
-#include "DataFormats/BeamSpot/interface/BeamSpot.h"
-#include "DataFormats/MuonReco/interface/MuonFwd.h"
-#include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
+
+class BeamSpot;
+class Track;
+class TH1D;
 
 class TrackTypeMonitor : public DQMEDAnalyzer {
 public:
@@ -30,7 +30,8 @@ public:
 protected:
 
   void analyze(edm::Event const& iEvent, edm::EventSetup const& iSetup) override;
-  void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &) override;
+  void endLuminosityBlock(edm::LuminosityBlock const& lumiSeg, edm::EventSetup const& eSetup); //override;
+  void bookHistograms(DQMStore::IBooker &, edm::Run const &, edm::EventSetup const &);
 
 private:
 
