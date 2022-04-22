@@ -1,24 +1,25 @@
 import FWCore.ParameterSet.Config as cms
 
-from DQM.TrackingMonitor.TrackerCollisionTrackingMonitor_cfi import *
-pixelTracksMonitor = TrackerCollisionTrackMon.clone(
-    FolderName = 'Tracking/PixelTrackParameters/pixelTracks',
-    TrackProducer = 'pixelTracks',
-    allTrackProducer = 'pixelTracks',
-    beamSpot = 'offlineBeamSpot',
-    primaryVertex = 'pixelVertices',
-    pvNDOF = 1,
-    doAllPlots = False,
-    doLumiAnalysis = True,
-    doProfilesVsLS = True,
-    doDCAPlots = True,
-    doEffFromHitPatternVsPU = False,
-    doEffFromHitPatternVsBX = False,
-    doEffFromHitPatternVsLUMI = False,
-    doPlotsVsGoodPVtx = True,
-    doPlotsVsLUMI = True,
-    doPlotsVsBX = True
-)
+import DQM.TrackingMonitor.TrackerCollisionTrackingMonitor_cfi
+pixelTracksMonitor = DQM.TrackingMonitor.TrackerCollisionTrackingMonitor_cfi.TrackerCollisionTrackMon.clone()
+pixelTracksMonitor.FolderName                = 'Tracking/PixelTrackParameters/pixelTracks'
+pixelTracksMonitor.TrackProducer             = 'pixelTracks'
+pixelTracksMonitor.allTrackProducer          = 'pixelTracks'
+pixelTracksMonitor.beamSpot                  = 'offlineBeamSpot'
+pixelTracksMonitor.primaryVertex             = 'pixelVertices'
+pixelTracksMonitor.pvNDOF                    = 1
+pixelTracksMonitor.doAllPlots                = False
+pixelTracksMonitor.doLumiAnalysis            = True
+pixelTracksMonitor.doProfilesVsLS            = True
+pixelTracksMonitor.doDCAPlots                = True
+pixelTracksMonitor.doProfilesVsLS            = True
+pixelTracksMonitor.doPlotsVsGoodPVtx         = True
+pixelTracksMonitor.doEffFromHitPatternVsPU   = False
+pixelTracksMonitor.doEffFromHitPatternVsBX   = False
+pixelTracksMonitor.doEffFromHitPatternVsLUMI = False
+pixelTracksMonitor.doPlotsVsGoodPVtx         = True
+pixelTracksMonitor.doPlotsVsLUMI             = True
+pixelTracksMonitor.doPlotsVsBX               = True
 
 _trackSelector = cms.EDFilter('TrackSelector',
     src = cms.InputTag('pixelTracks'),
@@ -77,13 +78,13 @@ for kN,vN in ntuplet.items():
 
 from CommonTools.ParticleFlow.goodOfflinePrimaryVertices_cfi import goodOfflinePrimaryVertices as _goodOfflinePrimaryVertices
 goodPixelVertices = _goodOfflinePrimaryVertices.clone(
-    src = "pixelVertices"
+    src = "pixelVertices",
 )
 
 from DQM.TrackingMonitor.primaryVertexResolution_cfi import primaryVertexResolution as _primaryVertexResolution
 pixelVertexResolution = _primaryVertexResolution.clone(
     vertexSrc = "goodPixelVertices",
-    rootFolder = "OfflinePixelPV/Resolution"
+    rootFolder = "OfflinePixelPV/Resolution",
 )
 
 pixelTracksMonitoringTask = cms.Task(
