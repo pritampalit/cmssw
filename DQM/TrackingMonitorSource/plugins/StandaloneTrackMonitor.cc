@@ -1,3 +1,7 @@
+
+
+// Authors : Subir Sarkar, Suchandra Dutta, Kuntal Mondal, Pritam Palit
+
 #include "TFile.h"
 #include "TH1.h"
 #include "TMath.h"
