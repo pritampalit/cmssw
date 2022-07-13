@@ -1,5 +1,35 @@
 import FWCore.ParameterSet.Config as cms
 
+L1TrackNullSelectionProducer = cms.EDProducer('L1TrackSelectionProducer',
+  l1TracksInputTag = cms.InputTag("L1GTTInputProducer","Level1TTTracksConverted"),
+  outputCollectionName = cms.string("Level1TTTracksNullSelected"),
+  cutSet = cms.PSet(
+                    ptMin = cms.double(-9999.0), # pt must be greater than this value, [GeV]
+                    absEtaMax = cms.double(9999.0), # absolute value of eta must be less than this value
+                    absZ0Max = cms.double(9999.0), # z0 must be less than this value, [cm]
+                    nStubsMin = cms.int32(-9999), # number of stubs must be greater than or equal to this value
+                    nPSStubsMin = cms.int32(-9999), # the number of stubs in the PS Modules must be greater than or equal to this value
+
+                    reducedBendChi2Max = cms.double(9999), # bend chi2 must be less than this value
+                    reducedChi2RZMax = cms.double(9999), # chi2rz/dof must be less than this value
+                    reducedChi2RPhiMax = cms.double(9999), # chi2rphi/dof must be less than this value
+
+                    #deltaZMaxEtaBounds = cms.vdouble(0.0, absEtaMax.value), # these values define the bin boundaries in |eta|
+                    #deltaZMax = cms.vdouble(0.5), # delta z must be less than these values, there will be one less value here than in deltaZMaxEtaBounds, [cm]
+                    deltaZMaxEtaBounds = cms.vdouble(0.0, 9999.0), # these values define the bin boundaries in |eta|
+                    deltaZMax = cms.vdouble(9999.0), # delta z must be less than these values, there will be one less value here than in deltaZMaxEtaBounds, [cm]
+                    ),
+  useDisplacedTracksDeltaZOverride = cms.double(-1.0), # override the deltaZ cut value for displaced tracks
+  processSimulatedTracks = cms.bool(True), # return selected tracks after cutting on the floating point values
+  processEmulatedTracks = cms.bool(True), # return selected tracks after cutting on the bitwise emulated values
+  debug = cms.int32(0) # Verbosity levels: 0, 1, 2, 3, 4
+)
+
+L1TrackNullSelectionProducerExtended = L1TrackNullSelectionProducer.clone(
+  l1TracksInputTag = cms.InputTag("L1GTTInputProducerExtended" , "Level1TTTracksExtendedConverted"),
+  outputCollectionName = "Level1TTTracksExtendedNullSelected",
+)
+
 L1TrackSelectionProducer = cms.EDProducer('L1TrackSelectionProducer',
   l1TracksInputTag = cms.InputTag("L1GTTInputProducer","Level1TTTracksConverted"),
   # If no vertex collection is provided, then the DeltaZ cuts will not be run
@@ -29,7 +59,7 @@ L1TrackSelectionProducer = cms.EDProducer('L1TrackSelectionProducer',
 )
 
 L1TrackSelectionProducerExtended = L1TrackSelectionProducer.clone(
-  l1TracksInputTag = "L1GTTInputProducerExtended : Level1TTTracksExtendedConverted",
+  l1TracksInputTag = cms.InputTag("L1GTTInputProducerExtended" , "Level1TTTracksExtendedConverted"),
   outputCollectionName = "Level1TTTracksExtendedSelected",
   useDisplacedTracksDeltaZOverride = 3.0, # Use prompt/displaced tracks
 )

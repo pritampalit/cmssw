@@ -301,4 +301,10 @@
   <class name="std::vector<l1t::TkJetWord>"/>
   <class name="edm::Wrapper<std::vector<l1t::TkJetWord> >"/>
 
+  <class name="l1t::TkLightMesonWord" ClassVersion="3">
+    <version ClassVersion="3" checksum="200525062"/>
+  </class>
+  <class name="std::vector<l1t::TkLightMesonWord>"/>
+  <class name="edm::Wrapper<std::vector<l1t::TkLightMesonWord> >"/>
+
 </lcgdict>
