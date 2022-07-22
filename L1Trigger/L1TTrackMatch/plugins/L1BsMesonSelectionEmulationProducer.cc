@@ -28,10 +28,13 @@
 #include <vector>
 #include <TMath.h>
 #include <cmath>
-
+#include <bitset>
 // Xilinx HLS includes
 #include <ap_fixed.h>
 #include <ap_int.h>
+#include <stdio.h>
+#include <cassert>
+#include <cstdlib>
 
 // user include files
 #include "DataFormats/Common/interface/Handle.h"
@@ -40,6 +43,8 @@
 #include "DataFormats/Common/interface/RefToPtr.h"
 #include "DataFormats/L1TCorrelator/interface/TkPhiCandidate.h"
 #include "DataFormats/L1TCorrelator/interface/TkPhiCandidateFwd.h"
+#include "DataFormats/L1Trigger/interface/TkLightMesonWord.h"
+#include "DataFormats/L1TrackTrigger/interface/TTTrack_TrackWord.h"
 #include "DataFormats/L1TrackTrigger/interface/TTTypes.h"
 #include "DataFormats/L1Trigger/interface/Vertex.h"
 #include "DataFormats/L1Trigger/interface/VertexWord.h"
@@ -53,7 +58,9 @@
 #include "CommonTools/Utils/interface/Selection.h"
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/global/EDProducer.h"
+#include "FWCore/Framework/interface/stream/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/MessageLogger/interface/MessageLogger.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
@@ -63,7 +70,7 @@
 #include "FWCore/Utilities/interface/StreamID.h"
 #include "Geometry/Records/interface/TrackerTopologyRcd.h"
 #include "DataFormats/Math/interface/LorentzVector.h"
-
+//#include "hls_math.h"
 //
 // class declaration
 
@@ -72,25 +79,29 @@ using namespace std;
 using namespace edm;
 using namespace l1t;
 
-class L1PhiMesonSelectionProducer : public edm::global::EDProducer<> {
+class L1BsMesonSelectionEmulationProducer : public edm::global::EDProducer<> {
 public:
-  explicit L1PhiMesonSelectionProducer(const edm::ParameterSet&);
-  ~L1PhiMesonSelectionProducer() override;
-
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+  explicit L1BsMesonSelectionEmulationProducer(const edm::ParameterSet&);
+  ~L1BsMesonSelectionEmulationProducer() override;
+
   static constexpr double kmass = 0.493;
+  double ETAPHI_LSB = M_PI / (1 << 12);
+  double Z0_LSB = 0.05;
+
 
 private:
   // ----------constants, enums and typedefs ---------
   // Relevant constants for the converted track word
 
-  typedef TTTrack<Ref_Phase2TrackerDigi_> L1Track;
-  typedef std::vector<L1Track> TTTrackCollection;
-  typedef edm::Ref<TTTrackCollection> TTTrackRef;
-  typedef edm::RefVector<TTTrackCollection> TTTrackRefCollection;
-  typedef edm::Handle<TTTrackRefCollection> TTTrackCollectionHandle;
-  typedef std::unique_ptr<TTTrackRefCollection> TTTrackRefCollectionUPtr;
-
+  enum TrackBitWidths {
+    kPtSize = TTTrack_TrackWord::TrackBitWidths::kRinvSize - 1,  // Width of pt                                                                                         
+    kPtMagSize = 9,                                              // Width of pt magnitude (unsigned)                                                                    
+    kEtaSize = TTTrack_TrackWord::TrackBitWidths::kTanlSize,     // Width of eta                                                                                        
+    kEtaMagSize = 3,                                             // Width of eta magnitude (signed)                                                                     
+  };
+  
+  typedef edm::Handle<TkLightMesonWordCollection> TkLightMesonWordCollectionHandle;
 
   // ----------member functions ----------------------
   /*  void printDebugInfo(const TTTrackCollectionHandle& l1PosKaonTracksHandle,
@@ -99,16 +110,19 @@ private:
                       const TTTrackRefCollectionUPtr& vTTTrackEmulationOutput) const;
 		      void printTrackInfo(edm::LogInfo& log, const TTTrackRef& track, bool printEmulation = false) const;*/
   void produce(edm::StreamID, edm::Event&, const edm::EventSetup&) const override;
+  //  void beginJob();
+  //  void produce(edm::Event&, const edm::EventSetup&) override;
+  //void endJob();
 
   // ----------selectors -----------------------------
   // Based on recommendations from https://twiki.cern.ch/twiki/bin/view/CMSPublic/SWGuideGenericSelectors
 
   // ----------member data ---------------------------
-  const edm::EDGetTokenT<TTTrackRefCollection> l1PosKaonTracksToken_;
-  const edm::EDGetTokenT<TTTrackRefCollection> l1NegKaonTracksToken_;
+  const edm::EDGetTokenT<TkLightMesonWordCollection> l1PhiMesonWordToken_;
+    
   const std::string outputCollectionName_;
   const edm::ParameterSet cutSet_;
-  const double dRmax_, dxymax_, dzmax_, tkpairMmin_, tkpairMmax_;
+  const double dRmax_, tkpairMmin_, tkpairMmax_;
   //bool processSimulatedTracks_, processEmulatedTracks_;
   int debug_;
 
@@ -117,33 +131,31 @@ private:
 //
 // constructors and destructor
 //
-L1PhiMesonSelectionProducer::L1PhiMesonSelectionProducer(const edm::ParameterSet& iConfig)
-  : l1PosKaonTracksToken_(consumes<TTTrackRefCollection>(iConfig.getParameter<edm::InputTag>("l1PosKaonTracksInputTag"))),
-    l1NegKaonTracksToken_(consumes<TTTrackRefCollection>(iConfig.getParameter<edm::InputTag>("l1NegKaonTracksInputTag"))),
+L1BsMesonSelectionEmulationProducer::L1BsMesonSelectionEmulationProducer(const edm::ParameterSet& iConfig)
+  : l1PhiMesonWordToken_(consumes<TkLightMesonWordCollection>(iConfig.getParameter<edm::InputTag>("l1PhiMesonWordInputTag"))),
       outputCollectionName_(iConfig.getParameter<std::string>("outputCollectionName")),
     cutSet_(iConfig.getParameter<edm::ParameterSet>("cutSet")),
     dRmax_(cutSet_.getParameter<double>("dRmax")),
-    dxymax_(cutSet_.getParameter<double>("dxymax")),
-    dzmax_(cutSet_.getParameter<double>("dzmax")),
+    //    dzmax_(cutSet_.getParameter<double>("dzmax")),
     tkpairMmin_(cutSet_.getParameter<double>("tkpairMmin")),
     tkpairMmax_(cutSet_.getParameter<double>("tkpairMmax")),
       debug_(iConfig.getParameter<int>("debug")) {
   // Confirm the the configuration makes sense
-  produces<TkPhiCandidateCollection>(outputCollectionName_);
+  produces<l1t::TkLightMesonWordCollection>(outputCollectionName_);
   //produces<TkPhiCandidateRefVector>(outputCollectionName_);
 }
 
-L1PhiMesonSelectionProducer::~L1PhiMesonSelectionProducer() {}
+L1BsMesonSelectionEmulationProducer::~L1BsMesonSelectionEmulationProducer() {}
 
 //
 // member functions
 //
 /*
-void L1PhiMesonSelectionProducer::printDebugInfo(const TTTrackCollectionHandle& l1PosKaonTracksHandle,
+void L1BsMesonSelectionEmulationProducer::printDebugInfo(const TTTrackCollectionHandle& l1PosKaonTracksHandle,
 						 const TTTrackCollectionHandle& l1NegKaonTracksHandle,
                                               const TTTrackRefCollectionUPtr& vTTTrackOutput,
                                               const TTTrackRefCollectionUPtr& vTTTrackEmulationOutput) const {
-  edm::LogInfo log("L1PhiMesonSelectionProducer");
+  edm::LogInfo log("L1BsMesonSelectionEmulationProducer");
   log << "The original Positive Kaon track collection (pt, eta, phi, nstub, bendchi2, chi2rz, chi2rphi, z0) values are ... \n";
   for (const auto& track : *l1PosKaonTracksHandle) {
     printTrackInfo(log, track, debug_ >= 4);
@@ -196,18 +208,18 @@ void L1PhiMesonSelectionProducer::printDebugInfo(const TTTrackCollectionHandle& 
   }
 }
 
-void L1PhiMesonSelectionProducer::printTrackInfo(edm::LogInfo& log, const TTTrackRef& track, bool printEmulation) const {
+void L1BsMesonSelectionEmulationProducer::printTrackInfo(edm::LogInfo& log, const TTTrackRef& track, bool printEmulation) const {
   log << "\t(" << track->momentum().perp() << ", " << track->momentum().eta() << ", " << track->momentum().phi() << ", "
       << track->getStubRefs().size() << ", " << track->stubPtConsistency() << ", " << track->chi2ZRed() << ", "
       << track->chi2XYRed() << ", " << track->z0() << ")\n";
 
   if (printEmulation) {
-    ap_uint<TrackBitWidths::kPtSize> ptEmulationBits = track->getTrackWord()(
+    ap_uint<TTTrack_TrackWord::TrackBitWidths::kPtSize> ptEmulationBits = track->getTrackWord()(
         TTTrack_TrackWord::TrackBitLocations::kRinvMSB - 1, TTTrack_TrackWord::TrackBitLocations::kRinvLSB);
-    ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize> ptEmulation;
+    ap_ufixed<TTTrack_TrackWord::TrackBitWidths::kPtSize, TTTrack_TrackWord::TrackBitWidths::kPtMagSize> ptEmulation;
     ptEmulation.V = ptEmulationBits.range();
     TTTrack_TrackWord::tanl_t etaEmulationBits = track->getTanlWord();
-    ap_fixed<TrackBitWidths::kEtaSize, TrackBitWidths::kEtaMagSize> etaEmulation;
+    ap_fixed<TTTrack_TrackWord::TrackBitWidths::kEtaSize, TTTrack_TrackWord::TrackBitWidths::kEtaMagSize> etaEmulation;
     etaEmulation.V = etaEmulationBits.range();
     log << "\t\t(" << ptEmulation.to_double() << ", " << etaEmulation.to_double() << ", " << track->getPhi() << ", "
         << track->getNStubs() << ", " << track->getBendChi2() << ", " << track->getChi2RZ() << ", " << track->getChi2RPhi()
@@ -216,68 +228,72 @@ void L1PhiMesonSelectionProducer::printTrackInfo(edm::LogInfo& log, const TTTrac
 }
 */
 // ------------ method called to produce the data  ------------
-void L1PhiMesonSelectionProducer::produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& iSetup) const {
-  unique_ptr<TkPhiCandidateCollection> L1PhiMesonOutput(new TkPhiCandidateCollection);
+void L1BsMesonSelectionEmulationProducer::produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& iSetup) const {
+//void L1BsMesonSelectionEmulationProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) const {
+  unique_ptr<l1t::TkLightMesonWordCollection> L1BsMesonEmulationOutput(new l1t::TkLightMesonWordCollection);
   //unique_ptr<TkPhiCandidateRefVector> L1PhiMesonOutputRefVec(new TkPhiCandidateRefVector);
 
-  TTTrackCollectionHandle l1PosKaonTracksHandle;
-  TTTrackCollectionHandle l1NegKaonTracksHandle;
+  TkLightMesonWordCollectionHandle l1PhiMesonWordHandle;
 
-  iEvent.getByToken(l1PosKaonTracksToken_, l1PosKaonTracksHandle);
-  iEvent.getByToken(l1NegKaonTracksToken_, l1NegKaonTracksHandle);
-  size_t nPosKaonOutputApproximate = l1PosKaonTracksHandle->size();
-  size_t nNegKaonOutputApproximate = l1NegKaonTracksHandle->size();
-  size_t nPhiMesonOutputApproximate = nPosKaonOutputApproximate + nNegKaonOutputApproximate;
+  iEvent.getByToken(l1PhiMesonWordToken_, l1PhiMesonWordHandle);
 
-  L1PhiMesonOutput->reserve(nPhiMesonOutputApproximate);
+  size_t nPhiMesonOutputApproximate = l1PhiMesonWordHandle->size();
+  size_t nBsMesonOutputApproximate = 2*nPhiMesonOutputApproximate;
+
+  L1BsMesonEmulationOutput->reserve(nBsMesonOutputApproximate);
   //L1PhiMesonOutputRefVec->reserve(nPhiMesonOutputApproximate);
   
-  for (size_t i = 0; i < nPosKaonOutputApproximate; i++) {
-    const auto& trackPosKaonRef = l1PosKaonTracksHandle->at(i);
-    const auto& trackPosKaon = *trackPosKaonRef;
+  for (size_t i = 0; i < nPhiMesonOutputApproximate; i++) {
+    const auto& tkPhiMesonWord1 = l1PhiMesonWordHandle->at(i);
+        
+    double trkptPhi1 = tkPhiMesonWord1.pt();
+    double trketaPhi1 = tkPhiMesonWord1.glbeta();
+    double trkphiPhi1 = tkPhiMesonWord1.glbphi();
+    double trkz0Phi1 = tkPhiMesonWord1.z0();
 
-    const edm::Ptr<L1Track>& trackPosKaonReftoPtr = edm::refToPtr(trackPosKaonRef);
-    float l1postkpt = trackPosKaon.momentum().perp();
-    float l1postketa = trackPosKaon.momentum().eta();
-    float l1postkphi = trackPosKaon.momentum().phi();
-    float l1postkpx = l1postkpt*cos(l1postkphi);
-    float l1postkpy = l1postkpt*sin(l1postkphi);
-    float l1postkpz = l1postkpt*sinh(l1postketa);
-    float l1postke = l1postkpt*cosh(l1postketa);
-
-    math::XYZTLorentzVector PosKaonP4(l1postkpx, l1postkpy, l1postkpz, l1postke);
-
-    for (size_t j = 0; j < nNegKaonOutputApproximate; j++) {
-    const auto& trackNegKaonRef = l1NegKaonTracksHandle->at(j);
-    const auto& trackNegKaon = *trackNegKaonRef;
-   
-    const edm::Ptr<L1Track>& trackNegKaonReftoPtr = edm::refToPtr(trackNegKaonRef);
-
-    float l1negtkpt = trackNegKaon.momentum().perp();
-    float l1negtketa = trackNegKaon.momentum().eta();
-    float l1negtkphi = trackNegKaon.momentum().phi();
-    float l1negtkpx = l1negtkpt*cos(l1negtkphi);
-    float l1negtkpy = l1negtkpt*sin(l1negtkphi);
-    float l1negtkpz = l1negtkpt*sinh(l1negtketa);
-    float l1negtke = l1negtkpt*cosh(l1negtketa);
-
-    math::XYZTLorentzVector NegKaonP4(l1negtkpx, l1negtkpy, l1negtkpz, l1negtke);
-
-    math::XYZTLorentzVector  PhiP4 = PosKaonP4 + NegKaonP4;
-
-    TkPhiCandidate tkphi(PhiP4, trackPosKaonReftoPtr, trackNegKaonReftoPtr);
+    double trkpxPhi1 = trkptPhi1*cos(trkphiPhi1);
+    double trkpyPhi1 = trkptPhi1*sin(trkphiPhi1);
+    double trkpzPhi1 = trkptPhi1*sinh(trketaPhi1);
     
-    //    if (tkphi.dxyTrkPair() > dxymax_) continue;
-    //if (std::fabs(tkphi.dzTrkPair()) > dzmax_) continue;
-    if (tkphi.dRTrkPair() > dRmax_) continue;
-    //## std::cout << "phi mass : " << tkphi.p4().M() << std::endl;
-    if (tkphi.p4().M() < tkpairMmin_ || tkphi.p4().M() > tkpairMmax_) continue;
+    for (size_t j = i+1; j < nPhiMesonOutputApproximate; j++) {
+    const auto& tkPhiMesonWord2 = l1PhiMesonWordHandle->at(j);
+        
+    double trkptPhi2 = tkPhiMesonWord2.pt();
+    double trketaPhi2 = tkPhiMesonWord2.glbeta();
+    double trkphiPhi2 = tkPhiMesonWord2.glbphi();
+    double trkz0Phi2 = tkPhiMesonWord2.z0();
 
-    //    std::cout << "phi cand eta inside analyzer : " << tkphi.eta() << std::endl;
-    std::cout << "phi cand mass inside analyzer : " << tkphi.p4().M() << std::endl;
+    double trkpxPhi2 = trkptPhi2*cos(trkphiPhi2);
+    double trkpyPhi2 = trkptPhi2*sin(trkphiPhi2);
+    double trkpzPhi2 = trkptPhi2*sinh(trketaPhi2);
+    
+    double trkdrpairBs = sqrt(pow((trkphiPhi1 - trkphiPhi2),2) + pow((trketaPhi1 - trketaPhi2),2));
+      // write mass calculation here , for hardware specially
 
-    L1PhiMesonOutput->push_back(tkphi);
+    double trkmasspairBs = sqrt(2*trkptPhi1*trkptPhi2*(cosh(trketaPhi1 - trketaPhi2)-cos(trkphiPhi1 - trkphiPhi2)));
 
+      if (trkdrpairBs > dRmax_) continue; 
+      if (trkmasspairBs < tkpairMmin_ || trkmasspairBs > tkpairMmax_) continue; // do it before
+
+      double trkpxBs = trkpxPhi2 + trkpxPhi1;
+      double trkpyBs = trkpyPhi2 + trkpyPhi1;
+      double trkpzBs = trkpzPhi2 + trkpzPhi1;
+      
+      l1t::TkLightMesonWord::valid_t trkvalidBs =   tkPhiMesonWord1.valid() && tkPhiMesonWord2.valid();
+      l1t::TkLightMesonWord::pt_t trkptBs = sqrt(pow(trkpxBs,2) + pow(trkpyBs,2)); // use Pow()
+      l1t::TkLightMesonWord::glbphi_t trkphiBs = atan(trkpyBs/trkpxBs);
+      l1t::TkLightMesonWord::glbeta_t trketaBs = asinh(trkpzBs/sqrt(pow(trkpxBs,2) + pow(trkpyBs,2)));
+      l1t::TkLightMesonWord::z0_t trkz0Bs = trkz0Phi1 + trkz0Phi2;
+      l1t::TkLightMesonWord::mass_t trkmassBs = sqrt(2*trkptPhi1*trkptPhi2*(cosh(trketaPhi1 - trketaPhi2)-cos(trkphiPhi1 - trkphiPhi2)));
+      l1t::TkLightMesonWord::type_t trktypeBs = l1t::TkLightMesonWord::TkLightMesonTypes::kBsType;
+      l1t::TkLightMesonWord::ntracks_t trkntracksBs = 2;
+      l1t::TkLightMesonWord::unassigned_t trkunassignedBs = 0;
+      
+      l1t::TkLightMesonWord trkBsWord(trkvalidBs, trkptBs, trkphiBs, trketaBs, trkz0Bs, trkmassBs, trktypeBs, trkntracksBs, trkunassignedBs);
+      
+      L1BsMesonEmulationOutput->push_back(trkBsWord);
+
+      //      std::cout << __PRETTY_FUNCTION__ << __LINE__ << std::endl;
     }
   }
 
@@ -307,22 +323,25 @@ void L1PhiMesonSelectionProducer::produce(edm::StreamID, edm::Event& iEvent, con
 
   // Put the outputs into the event
   //L1PhiMesonOutputRefVec = TkPhiCandidateRefVector(L1PhiMesonOutput);
-  iEvent.put(std::move(L1PhiMesonOutput), outputCollectionName_);
+  iEvent.put(std::move(L1BsMesonEmulationOutput), outputCollectionName_);
 
 }
 
+//void L1BsMesonSelectionEmulationProducer::beginJob() {}
+
+//void L1BsMesonSelectionEmulationProducer::endJob() {}
+
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
-void L1PhiMesonSelectionProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  //L1PhiMesonSelectionProducer
+void L1BsMesonSelectionEmulationProducer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+  //L1BsMesonSelectionEmulationProducer
   edm::ParameterSetDescription desc;
-  desc.add<edm::InputTag>("l1PosKaonTracksInputTag", edm::InputTag("TTTracksFromTrackletEmulation", "Level1TTTracks"));
-  desc.add<edm::InputTag>("l1NegKaonTracksInputTag", edm::InputTag("TTTracksFromTrackletEmulation", "Level1TTTracks"));
+  desc.add<edm::InputTag>("l1PhiMesonWordInputTag", edm::InputTag("TTTracksFromTrackletEmulation", "Level1TTTracks"));
   desc.add<std::string>("outputCollectionName", "Level1TTKaonTracksSelected");
   {
     edm::ParameterSetDescription descCutSet;
     descCutSet.add<double>("dRmax", 0.12)->setComment("dr must be less than this value, []");
-    descCutSet.add<double>("dxymax", 1.0)->setComment("dxy must be less than this value, [cm]");
-    descCutSet.add<double>("dzmax", 1.0)->setComment("dz must be less than this value, [cm]");
+    //    descCutSet.add<double>("dxymax", 1.0)->setComment("dxy must be less than this value, [cm]");
+    //descCutSet.add<double>("dzmax", 1.0)->setComment("dz must be less than this value, [cm]");
     descCutSet.add<double>("tkpairMmin", 1.0)->setComment("tkpair mass must be greater than this value, [GeV]");
     descCutSet.add<double>("tkpairMmax", 1.03)->setComment("tkpair mass must be less than this value, [GeV]");
     desc.add<edm::ParameterSetDescription>("cutSet", descCutSet);
@@ -333,4 +352,4 @@ void L1PhiMesonSelectionProducer::fillDescriptions(edm::ConfigurationDescription
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(L1PhiMesonSelectionProducer);
+DEFINE_FWK_MODULE(L1BsMesonSelectionEmulationProducer);

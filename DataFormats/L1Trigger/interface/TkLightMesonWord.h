@@ -175,11 +175,11 @@ namespace l1t {
     // These functions return the unpacked and converted values
     // These functions return real numbers converted from the digitized quantities by unpacking the 64-bit vertex word
     bool valid() const { return validWord().to_bool(); }
-    float pt() const { return ptWord().to_float(); }
-    float glbphi() const { return glbPhiWord().to_float() * ETAPHI_LSB; }
-    float glbeta() const { return glbEtaWord().to_float() * ETAPHI_LSB; }
-    float z0() const { return z0Word().to_float() * Z0_LSB; }
-    float mass() const { return massWord().to_float(); }
+    double pt() const { return ptWord().to_double(); }
+    double glbphi() const { return glbPhiWord().to_double() * ETAPHI_LSB; }
+    double glbeta() const { return glbEtaWord().to_double() * ETAPHI_LSB; }
+    double z0() const { return z0Word().to_double() * Z0_LSB; }
+    double mass() const { return massWord().to_double(); }
     unsigned int type() const { return typeWord().to_uint(); }
     unsigned int ntracks() const { return ntracksWord().to_uint(); }
     unsigned int unassigned() const { return unassignedWord().to_uint(); }

@@ -72,6 +72,7 @@
 #include "DataFormats/L1TCorrelator/interface/TkHTMissFwd.h"
 #include "DataFormats/L1Trigger/interface/Vertex.h"
 #include "DataFormats/L1Trigger/interface/VertexWord.h"
+#include "DataFormats/L1Trigger/interface/TkLightMesonWord.h"
 #include "DataFormats/L1Trigger/interface/EtSum.h"
 #include "L1Trigger/L1TTrackMatch/interface/L1TkEtMissEmuAlgo.h"
 #include "L1Trigger/L1TTrackMatch/interface/L1TkHTMissEmulatorProducer.h"
@@ -97,7 +98,7 @@
 // NAMESPACES
 using namespace std;
 using namespace edm;
-
+using namespace l1t;
 //////////////////////////////
 //                          //
 //     CLASS DEFINITION     //
@@ -127,6 +128,11 @@ public:
   // Other member functions
   int getSelectedTrackIndex(const L1TrackRef& trackRef,
                             const edm::Handle<L1TrackRefCollection>& selectedTrackRefs) const;
+
+  double ETAPHI_LSB = M_PI / (1 << 12);
+  double Z0_LSB = 0.05;
+  ap_ufixed<64, 32> etaphi_conv = 1.0 / ETAPHI_LSB;
+  ap_ufixed<64, 32> z0_conv = 1.0 * Z0_LSB;
 
 private:
   //-----------------------------------------------------------------------------------------------
@@ -179,6 +185,8 @@ private:
 
   edm::InputTag TrackPhiCandsInputTag;
   edm::InputTag TrackBsCandsInputTag;
+  edm::InputTag TrackPhiCandsEmulationInputTag;
+  edm::InputTag TrackBsCandsEmulationInputTag;
 
   edm::InputTag TrackMETInputTag;
   edm::InputTag TrackMETEmuInputTag;
@@ -240,6 +248,8 @@ private:
 
   edm::EDGetTokenT<l1t::TkPhiCandidateCollection> TrackPhiCandsToken_;
   edm::EDGetTokenT<l1t::TkBsCandidateCollection> TrackBsCandsToken_;
+  edm::EDGetTokenT<l1t::TkLightMesonWordCollection> TrackPhiCandsEmulationToken_;
+  edm::EDGetTokenT<l1t::TkLightMesonWordCollection> TrackBsCandsEmulationToken_;
 
   edm::ESGetToken<TrackerTopology, TrackerTopologyRcd> tTopoToken_;
   edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> tGeomToken_;
@@ -485,15 +495,45 @@ private:
   std::vector<int>* m_trkjetemExt_ntracks;
   std::vector<int>* m_trkjetemExt_nxtracks;
 
-  std::vector<float>* m_trkphicands_p;
+  std::vector<float>* m_trkphicands_mass;
   std::vector<float>* m_trkphicands_phi;
   std::vector<float>* m_trkphicands_eta;
   std::vector<float>* m_trkphicands_pt;
 
-  std::vector<float>* m_trkbscands_p;
+  std::vector<float>* m_trkphicandsExt_mass;
+  std::vector<float>* m_trkphicandsExt_phi;
+  std::vector<float>* m_trkphicandsExt_eta;
+  std::vector<float>* m_trkphicandsExt_pt;
+
+  std::vector<float>* m_trkbscands_mass;
   std::vector<float>* m_trkbscands_phi;
   std::vector<float>* m_trkbscands_eta;
   std::vector<float>* m_trkbscands_pt;
+
+  std::vector<float>* m_trkbscandsExt_mass;
+  std::vector<float>* m_trkbscandsExt_phi;
+  std::vector<float>* m_trkbscandsExt_eta;
+  std::vector<float>* m_trkbscandsExt_pt;
+
+  std::vector<float>* m_trkphicandsemulation_mass;
+  std::vector<float>* m_trkphicandsemulation_phi;
+  std::vector<float>* m_trkphicandsemulation_eta;
+  std::vector<float>* m_trkphicandsemulation_pt;
+
+  std::vector<float>* m_trkphicandsemulationExt_mass;
+  std::vector<float>* m_trkphicandsemulationExt_phi;
+  std::vector<float>* m_trkphicandsemulationExt_eta;
+  std::vector<float>* m_trkphicandsemulationExt_pt;
+
+  std::vector<float>* m_trkbscandsemulation_mass;
+  std::vector<float>* m_trkbscandsemulation_phi;
+  std::vector<float>* m_trkbscandsemulation_eta;
+  std::vector<float>* m_trkbscandsemulation_pt;
+
+  std::vector<float>* m_trkbscandsemulationExt_mass;
+  std::vector<float>* m_trkbscandsemulationExt_phi;
+  std::vector<float>* m_trkbscandsemulationExt_eta;
+  std::vector<float>* m_trkbscandsemulationExt_pt;
 
 };
 
@@ -556,6 +596,8 @@ L1TrackObjectNtupleMaker::L1TrackObjectNtupleMaker(edm::ParameterSet const& iCon
 
     TrackPhiCandsInputTag = iConfig.getParameter<InputTag>("TrackPhiCandsInputTag");
     TrackBsCandsInputTag = iConfig.getParameter<InputTag>("TrackBsCandsInputTag");
+    TrackPhiCandsEmulationInputTag = iConfig.getParameter<InputTag>("TrackPhiCandsEmulationInputTag");
+    TrackBsCandsEmulationInputTag = iConfig.getParameter<InputTag>("TrackBsCandsEmulationInputTag");
 
     ttTrackToken_ = consumes<L1TrackCollection>(L1TrackInputTag);
     ttTrackMCTruthToken_ = consumes<TTTrackAssociationMap<Ref_Phase2TrackerDigi_>>(MCTruthTrackInputTag);
@@ -579,6 +621,8 @@ L1TrackObjectNtupleMaker::L1TrackObjectNtupleMaker(edm::ParameterSet const& iCon
 
     TrackPhiCandsToken_ = consumes<l1t::TkPhiCandidateCollection>(TrackPhiCandsInputTag);
     TrackBsCandsToken_ = consumes<l1t::TkBsCandidateCollection>(TrackBsCandsInputTag);
+    TrackPhiCandsEmulationToken_ = consumes<l1t::TkLightMesonWordCollection>(TrackPhiCandsEmulationInputTag);
+    TrackBsCandsEmulationToken_ = consumes<l1t::TkLightMesonWordCollection>(TrackBsCandsEmulationInputTag);
   }
 
   if (Displaced == "Displaced" || Displaced == "Both") {
@@ -586,8 +630,7 @@ L1TrackObjectNtupleMaker::L1TrackObjectNtupleMaker(edm::ParameterSet const& iCon
     MCTruthTrackExtendedInputTag = iConfig.getParameter<edm::InputTag>("MCTruthTrackExtendedInputTag");
     L1TrackExtendedGTTInputTag = iConfig.getParameter<edm::InputTag>("L1TrackExtendedGTTInputTag");
     L1TrackExtendedSelectedInputTag = iConfig.getParameter<edm::InputTag>("L1TrackExtendedSelectedInputTag");
-    L1TrackExtendedSelectedEmulationInputTag =
-        iConfig.getParameter<edm::InputTag>("L1TrackExtendedSelectedEmulationInputTag");
+    L1TrackExtendedSelectedEmulationInputTag = iConfig.getParameter<edm::InputTag>("L1TrackExtendedSelectedEmulationInputTag");
     TrackFastJetsExtendedInputTag = iConfig.getParameter<InputTag>("TrackFastJetsExtendedInputTag");
     TrackJetsExtendedInputTag = iConfig.getParameter<InputTag>("TrackJetsExtendedInputTag");
     TrackJetsExtendedEmuInputTag = iConfig.getParameter<InputTag>("TrackJetsExtendedEmuInputTag");
@@ -612,6 +655,8 @@ L1TrackObjectNtupleMaker::L1TrackObjectNtupleMaker(edm::ParameterSet const& iCon
 
     TrackPhiCandsToken_ = consumes<l1t::TkPhiCandidateCollection>(TrackPhiCandsInputTag);
     TrackBsCandsToken_ = consumes<l1t::TkBsCandidateCollection>(TrackBsCandsInputTag);
+    TrackPhiCandsEmulationToken_ = consumes<l1t::TkLightMesonWordCollection>(TrackPhiCandsEmulationInputTag);
+    TrackBsCandsEmulationToken_ = consumes<l1t::TkLightMesonWordCollection>(TrackBsCandsEmulationInputTag);
   }
 
   ttStubToken_ = consumes<edmNew::DetSetVector<TTStub<Ref_Phase2TrackerDigi_>>>(L1StubInputTag);
@@ -862,14 +907,50 @@ void L1TrackObjectNtupleMaker::beginJob() {
   m_trkphicands_eta = new std::vector<float>;
   //m_trkphicand_vz = new std::vector<float>;
   m_trkphicands_phi = new std::vector<float>;
-  m_trkphicands_p = new std::vector<float>;
+  m_trkphicands_mass = new std::vector<float>;
   m_trkphicands_pt = new std::vector<float>;
+
+  m_trkphicandsExt_eta = new std::vector<float>;
+  //m_trkphicand_vz = new std::vector<float>;
+  m_trkphicandsExt_phi = new std::vector<float>;
+  m_trkphicandsExt_mass = new std::vector<float>;
+  m_trkphicandsExt_pt = new std::vector<float>;
  
   m_trkbscands_eta = new std::vector<float>;
   //m_trkbscand_vz = new std::vector<float>;
   m_trkbscands_phi = new std::vector<float>;
-  m_trkbscands_p = new std::vector<float>;
+  m_trkbscands_mass = new std::vector<float>;
   m_trkbscands_pt = new std::vector<float>;
+
+  m_trkbscandsExt_eta = new std::vector<float>;
+  //m_trkbscand_vz = new std::vector<float>;
+  m_trkbscandsExt_phi = new std::vector<float>;
+  m_trkbscandsExt_mass = new std::vector<float>;
+  m_trkbscandsExt_pt = new std::vector<float>;
+
+  m_trkphicandsemulation_eta = new std::vector<float>;
+  //m_trkphicand_vz = new std::vector<float>;
+  m_trkphicandsemulation_phi = new std::vector<float>;
+  m_trkphicandsemulation_mass = new std::vector<float>;
+  m_trkphicandsemulation_pt = new std::vector<float>;
+
+  m_trkphicandsemulationExt_eta = new std::vector<float>;
+  //m_trkphicand_vz = new std::vector<float>;
+  m_trkphicandsemulationExt_phi = new std::vector<float>;
+  m_trkphicandsemulationExt_mass = new std::vector<float>;
+  m_trkphicandsemulationExt_pt = new std::vector<float>;
+ 
+  m_trkbscandsemulation_eta = new std::vector<float>;
+  //m_trkbscand_vz = new std::vector<float>;
+  m_trkbscandsemulation_phi = new std::vector<float>;
+  m_trkbscandsemulation_mass = new std::vector<float>;
+  m_trkbscandsemulation_pt = new std::vector<float>;
+
+  m_trkbscandsemulationExt_eta = new std::vector<float>;
+  //m_trkbscand_vz = new std::vector<float>;
+  m_trkbscandsemulationExt_phi = new std::vector<float>;
+  m_trkbscandsemulationExt_mass = new std::vector<float>;
+  m_trkbscandsemulationExt_pt = new std::vector<float>;
 
   // ntuple
   eventTree = fs->make<TTree>("eventTree", "Event tree");
@@ -1114,16 +1195,28 @@ void L1TrackObjectNtupleMaker::beginJob() {
     if (Displaced == "Prompt" || Displaced == "Both") {
       eventTree->Branch("trkphicands_eta", &m_trkphicands_eta);
       //eventTree->Branch("trkphicands_vz", &m_trkphicands_vz);
-      eventTree->Branch("trkphicands_p", &m_trkphicands_p);
+      eventTree->Branch("trkphicands_mass", &m_trkphicands_mass);
       eventTree->Branch("trkphicands_pt", &m_trkphicands_pt);
       eventTree->Branch("trkphicands_phi", &m_trkphicands_phi);
+
+      eventTree->Branch("trkphicandsemulation_eta", &m_trkphicandsemulation_eta);
+      //eventTree->Branch("trkphicandsemulation_vz", &m_trkphicandsemulation_vz);
+      eventTree->Branch("trkphicandsemulation_mass", &m_trkphicandsemulation_mass);
+      eventTree->Branch("trkphicandsemulation_pt", &m_trkphicandsemulation_pt);
+      eventTree->Branch("trkphicandsemulation_phi", &m_trkphicandsemulation_phi);
     }
     if (Displaced == "Displaced" || Displaced == "Both") {
-      eventTree->Branch("trkphicands_eta", &m_trkphicands_eta);
-      //eventTree->Branch("trkphicands_vz", &m_trkphicands_vz);
-      eventTree->Branch("trkphicands_p", &m_trkphicands_p);
-      eventTree->Branch("trkphicands_pt", &m_trkphicands_pt);
-      eventTree->Branch("trkphicands_phi", &m_trkphicands_phi);
+      eventTree->Branch("trkphicandsExt_eta", &m_trkphicandsExt_eta);
+      //eventTree->Branch("trkphicandsExt_vz", &m_trkphicandsExt_vz);
+      eventTree->Branch("trkphicandsExt_mass", &m_trkphicandsExt_mass);
+      eventTree->Branch("trkphicandsExt_pt", &m_trkphicandsExt_pt);
+      eventTree->Branch("trkphicandsExt_phi", &m_trkphicandsExt_phi);
+
+      eventTree->Branch("trkphicandsemulationExt_eta", &m_trkphicandsemulationExt_eta);
+      //eventTree->Branch("trkphicandsemulation_vz", &m_trkphicandsemulationExt_vz);
+      eventTree->Branch("trkphicandsemulationExt_mass", &m_trkphicandsemulationExt_mass);
+      eventTree->Branch("trkphicandsemulationExt_pt", &m_trkphicandsemulationExt_pt);
+      eventTree->Branch("trkphicandsemulationExt_phi", &m_trkphicandsemulationExt_phi);
     }
   }
 
@@ -1131,18 +1224,31 @@ void L1TrackObjectNtupleMaker::beginJob() {
     if (Displaced == "Prompt" || Displaced == "Both") {
       eventTree->Branch("trkbscands_eta", &m_trkbscands_eta);
       //eventTree->Branch("trkbscands_vz", &m_trkbscands_vz);
-      eventTree->Branch("trkbscands_p", &m_trkbscands_p);
+      eventTree->Branch("trkbscands_mass", &m_trkbscands_mass);
       eventTree->Branch("trkbscands_pt", &m_trkbscands_pt);
       eventTree->Branch("trkbscands_phi", &m_trkbscands_phi);
+
+      eventTree->Branch("trkbscandsemulation_eta", &m_trkbscandsemulation_eta);
+      //eventTree->Branch("trkbscandsemulation_vz", &m_trkbscandsemulation_vz);
+      eventTree->Branch("trkbscandsemulation_mass", &m_trkbscandsemulation_mass);
+      eventTree->Branch("trkbscandsemulation_pt", &m_trkbscandsemulation_pt);
+      eventTree->Branch("trkbscandsemulation_phi", &m_trkbscandsemulation_phi);      
     }
     if (Displaced == "Displaced" || Displaced == "Both") {
-      eventTree->Branch("trkbscands_eta", &m_trkbscands_eta);
-      //eventTree->Branch("trkbscands_vz", &m_trkbscands_vz);
-      eventTree->Branch("trkbscands_p", &m_trkbscands_p);
-      eventTree->Branch("trkbscands_pt", &m_trkbscands_pt);
-      eventTree->Branch("trkbscands_phi", &m_trkphicands_phi);
+      eventTree->Branch("trkbscandsExt_eta", &m_trkbscandsExt_eta);
+      //eventTree->Branch("trkbscandsExt_vz", &m_trkbscandsExt_vz);
+      eventTree->Branch("trkbscandsExt_mass", &m_trkbscandsExt_mass);
+      eventTree->Branch("trkbscandsExt_pt", &m_trkbscandsExt_pt);
+      eventTree->Branch("trkbscandsExt_phi", &m_trkbscandsExt_phi);
+
+      eventTree->Branch("trkbscandsemulationExt_eta", &m_trkbscandsemulationExt_eta);
+      //eventTree->Branch("trkbscandsemulationExt_vz", &m_trkbscandsemulationExt_vz);
+      eventTree->Branch("trkbscandsemulationExt_mass", &m_trkbscandsemulationExt_mass);
+      eventTree->Branch("trkbscandsemulationExt_pt", &m_trkbscandsemulationExt_pt);
+      eventTree->Branch("trkbscandsemulationExt_phi", &m_trkbscandsemulationExt_phi);
     }
   }
+
   
 }
 
@@ -1380,14 +1486,26 @@ void L1TrackObjectNtupleMaker::analyze(const edm::Event& iEvent, const edm::Even
       m_trkphicands_pt->clear();
       //m_trkphicands_vz->clear();
       m_trkphicands_phi->clear();
-      m_trkphicands_p->clear();
+      m_trkphicands_mass->clear();
+
+      m_trkphicandsemulation_eta->clear();
+      m_trkphicandsemulation_pt->clear();
+      //m_trkphicandsemulation_vz->clear();
+      m_trkphicandsemulation_phi->clear();
+      m_trkphicandsemulation_mass->clear();
     }
-    if (Displaced == "Prompt" || Displaced == "Both") {
-      m_trkphicands_eta->clear();
-      m_trkphicands_pt->clear();
-      //m_trkphicands_vz->clear();
-      m_trkphicands_phi->clear();
-      m_trkphicands_p->clear();
+    if (Displaced == "Displaced" || Displaced == "Both") {
+      m_trkphicandsExt_eta->clear();
+      m_trkphicandsExt_pt->clear();
+      //m_trkphicandsExt_vz->clear();
+      m_trkphicandsExt_phi->clear();
+      m_trkphicandsExt_mass->clear();
+
+      m_trkphicandsemulationExt_eta->clear();
+      m_trkphicandsemulationExt_pt->clear();
+      //m_trkphicandsemulationExt_vz->clear();
+      m_trkphicandsemulationExt_phi->clear();
+      m_trkphicandsemulationExt_mass->clear();
     }
   }
 
@@ -1397,14 +1515,26 @@ void L1TrackObjectNtupleMaker::analyze(const edm::Event& iEvent, const edm::Even
       m_trkbscands_pt->clear();
       //m_trkbscands_vz->clear();
       m_trkbscands_phi->clear();
-      m_trkbscands_p->clear();
+      m_trkbscands_mass->clear();
+
+      m_trkbscandsemulation_eta->clear();
+      m_trkbscandsemulation_pt->clear();
+      //m_trkbscandsemulation_vz->clear();
+      m_trkbscandsemulation_phi->clear();
+      m_trkbscandsemulation_mass->clear();
     }
     if (Displaced == "Prompt" || Displaced == "Both") {
       m_trkbscands_eta->clear();
       m_trkbscands_pt->clear();
       //m_trkbscands_vz->clear();
       m_trkbscands_phi->clear();
-      m_trkbscands_p->clear();
+      m_trkbscands_mass->clear();
+
+      m_trkbscandsemulation_eta->clear();
+      m_trkbscandsemulation_pt->clear();
+      //m_trkbscandsemulation_vz->clear();
+      m_trkbscandsemulation_phi->clear();
+      m_trkbscandsemulation_mass->clear();
     }
   }
 
@@ -1463,6 +1593,12 @@ void L1TrackObjectNtupleMaker::analyze(const edm::Event& iEvent, const edm::Even
   edm::Handle<l1t::TkBsCandidateCollection> TrackBsCandsHandle;
   std::vector<l1t::TkBsCandidate>::const_iterator bscandsIter;
 
+  edm::Handle<l1t::TkLightMesonWordCollection> TrackPhiCandsEmulationHandle;
+  std::vector<l1t::TkLightMesonWord>::const_iterator phicandsemulationIter;
+
+  edm::Handle<l1t::TkLightMesonWordCollection> TrackBsCandsEmulationHandle;
+  std::vector<l1t::TkLightMesonWord>::const_iterator bscandsemulationIter;
+
   // Track Sums
   edm::Handle<std::vector<l1t::TkEtMiss>> L1TkMETHandle;
   edm::Handle<std::vector<l1t::TkEtMiss>> L1TkMETExtendedHandle;
@@ -1500,6 +1636,9 @@ void L1TrackObjectNtupleMaker::analyze(const edm::Event& iEvent, const edm::Even
     iEvent.getByToken(TrackPhiCandsToken_, TrackPhiCandsHandle);
     iEvent.getByToken(TrackBsCandsToken_, TrackBsCandsHandle);
 
+    iEvent.getByToken(TrackPhiCandsEmulationToken_, TrackPhiCandsEmulationHandle);
+    iEvent.getByToken(TrackBsCandsEmulationToken_, TrackBsCandsEmulationHandle);
+
     iEvent.getByToken(TrackMETToken_, L1TkMETHandle);
     iEvent.getByToken(TrackMETEmuToken_, L1TkMETEmuHandle);
     iEvent.getByToken(TrackMHTToken_, L1TkMHTHandle);
@@ -1524,6 +1663,9 @@ void L1TrackObjectNtupleMaker::analyze(const edm::Event& iEvent, const edm::Even
 
     iEvent.getByToken(TrackPhiCandsToken_, TrackPhiCandsHandle);
     iEvent.getByToken(TrackBsCandsToken_, TrackBsCandsHandle);
+    
+    iEvent.getByToken(TrackPhiCandsEmulationToken_, TrackPhiCandsEmulationHandle);
+    iEvent.getByToken(TrackBsCandsEmulationToken_, TrackBsCandsEmulationHandle);
 
     iEvent.getByToken(TrackMETExtendedToken_, L1TkMETExtendedHandle);
     iEvent.getByToken(TrackMHTExtendedToken_, L1TkMHTExtendedHandle);
@@ -2718,25 +2860,57 @@ void L1TrackObjectNtupleMaker::analyze(const edm::Event& iEvent, const edm::Even
       edm::LogWarning("DataNotFound") << "\nWarning: TrackPhiCandsHandle not found" << std::endl;
     if (!TrackPhiCandsHandle.isValid() && (Displaced == "Displaced" || Displaced == "Both"))
       edm::LogWarning("DataNotFound") << "\nWarning: TrackPhiCandsHandle not found" << std::endl;
+    
+    if (!TrackPhiCandsEmulationHandle.isValid() && (Displaced == "Prompt" || Displaced == "Both"))
+      edm::LogWarning("DataNotFound") << "\nWarning: TrackPhiCandsHandle not found" << std::endl;
+    if (!TrackPhiCandsEmulationHandle.isValid() && (Displaced == "Displaced" || Displaced == "Both"))
+      edm::LogWarning("DataNotFound") << "\nWarning: TrackPhiCandsHandle not found" << std::endl;
+    
+    if (TrackPhiCandsHandle.isValid()) std::cout << "TrackPhiCandsHandle size : " << TrackPhiCandsHandle->size() << std::endl;
+
     if (TrackPhiCandsHandle.isValid() && (Displaced == "Prompt" || Displaced == "Both")) {
       for (phicandsIter = TrackPhiCandsHandle->begin(); phicandsIter != TrackPhiCandsHandle->end(); ++phicandsIter) {
+	//std::cout << "phi can eta inside ntuplemaker : " << phicandsIter->eta() << std::endl;
         m_trkphicands_phi->push_back(phicandsIter->phi());
         m_trkphicands_eta->push_back(phicandsIter->eta());
         m_trkphicands_pt->push_back(phicandsIter->pt());
-        m_trkphicands_p->push_back(phicandsIter->p());
+        m_trkphicands_mass->push_back(phicandsIter->mass());
+	std::cout << "phi cand mass inside ntuplemaker : " << phicandsIter->mass() << std::endl;
       }
     }
     if (TrackPhiCandsHandle.isValid() && (Displaced == "Displaced" || Displaced == "Both")) {
       for (phicandsIter = TrackPhiCandsHandle->begin(); phicandsIter != TrackPhiCandsHandle->end(); ++phicandsIter) {
-        m_trkphicands_phi->push_back(phicandsIter->phi());
-        m_trkphicands_eta->push_back(phicandsIter->eta());
-        m_trkphicands_pt->push_back(phicandsIter->pt());
-        m_trkphicands_p->push_back(phicandsIter->p());
+        m_trkphicandsExt_phi->push_back(phicandsIter->phi());
+        m_trkphicandsExt_eta->push_back(phicandsIter->eta());
+        m_trkphicandsExt_pt->push_back(phicandsIter->pt());
+        m_trkphicandsExt_mass->push_back(phicandsIter->mass());
+	std::cout << "phi ext cand mass inside ntuplemaker : " << phicandsIter->mass() << std::endl;
       }
     }
+    
+    if (TrackPhiCandsEmulationHandle.isValid()) std::cout << "TrackPhiCandsEmulationHandle size : " << TrackPhiCandsEmulationHandle->size() << std::endl;
+    if (TrackPhiCandsEmulationHandle.isValid() && (Displaced == "Prompt" || Displaced == "Both")) {
+      for (phicandsemulationIter = TrackPhiCandsEmulationHandle->begin(); phicandsemulationIter != TrackPhiCandsEmulationHandle->end(); ++phicandsemulationIter) {
+	//std::cout << "phi can emu eta inside ntuplemaker : " << phicandsemulationIter->glbeta() << std::endl;
+        m_trkphicandsemulation_phi->push_back(phicandsemulationIter->glbphi());
+        m_trkphicandsemulation_eta->push_back(phicandsemulationIter->glbeta());
+        m_trkphicandsemulation_pt->push_back(phicandsemulationIter->pt());
+        m_trkphicandsemulation_mass->push_back(phicandsemulationIter->mass());
+	std::cout << "phi cand emulation mass inside ntuplemaker : " << phicandsemulationIter->mass() << std::endl;
+      }
+    }
+    if (TrackPhiCandsEmulationHandle.isValid() && (Displaced == "Displaced" || Displaced == "Both")) {
+      for (phicandsemulationIter = TrackPhiCandsEmulationHandle->begin(); phicandsemulationIter != TrackPhiCandsEmulationHandle->end(); ++phicandsemulationIter) {
+        m_trkphicandsemulationExt_phi->push_back(phicandsemulationIter->glbphi());
+        m_trkphicandsemulationExt_eta->push_back(phicandsemulationIter->glbeta());
+        m_trkphicandsemulationExt_pt->push_back(phicandsemulationIter->pt());
+        m_trkphicandsemulationExt_mass->push_back(phicandsemulationIter->mass());
+	std::cout << "phi ext cand emulation mass inside ntuplemaker : " << phicandsemulationIter->mass() << std::endl;
+      }
+    }    
   } // end track phicands
-
-    if (SaveTrackBsCands) {
+  
+  if (SaveTrackBsCands) {
     if (!TrackBsCandsHandle.isValid() && (Displaced == "Prompt" || Displaced == "Both"))
       edm::LogWarning("DataNotFound") << "\nWarning: TrackBsCandsHandle not found" << std::endl;
     if (!TrackBsCandsHandle.isValid() && (Displaced == "Displaced" || Displaced == "Both"))
@@ -2746,15 +2920,36 @@ void L1TrackObjectNtupleMaker::analyze(const edm::Event& iEvent, const edm::Even
         m_trkbscands_phi->push_back(bscandsIter->phi());
         m_trkbscands_eta->push_back(bscandsIter->eta());
         m_trkbscands_pt->push_back(bscandsIter->pt());
-        m_trkbscands_p->push_back(bscandsIter->p());
+        m_trkbscands_mass->push_back(bscandsIter->mass());
       }
     }
     if (TrackBsCandsHandle.isValid() && (Displaced == "Displaced" || Displaced == "Both")) {
       for (bscandsIter = TrackBsCandsHandle->begin(); bscandsIter != TrackBsCandsHandle->end(); ++bscandsIter) {
-        m_trkbscands_phi->push_back(bscandsIter->phi());
-        m_trkbscands_eta->push_back(bscandsIter->eta());
-        m_trkbscands_pt->push_back(bscandsIter->pt());
-        m_trkbscands_p->push_back(bscandsIter->p());
+        m_trkbscandsExt_phi->push_back(bscandsIter->phi());
+        m_trkbscandsExt_eta->push_back(bscandsIter->eta());
+        m_trkbscandsExt_pt->push_back(bscandsIter->pt());
+        m_trkbscandsExt_mass->push_back(bscandsIter->mass());
+      }
+    }
+
+    if (!TrackBsCandsEmulationHandle.isValid() && (Displaced == "Prompt" || Displaced == "Both"))
+      edm::LogWarning("DataNotFound") << "\nWarning: TrackBsCandsEmulationHandle not found" << std::endl;
+    if (!TrackBsCandsEmulationHandle.isValid() && (Displaced == "Displaced" || Displaced == "Both"))
+      edm::LogWarning("DataNotFound") << "\nWarning: TrackBsCandsEmulationHandle not found" << std::endl;
+    if (TrackBsCandsEmulationHandle.isValid() && (Displaced == "Prompt" || Displaced == "Both")) {
+      for (bscandsemulationIter = TrackBsCandsEmulationHandle->begin(); bscandsemulationIter != TrackBsCandsEmulationHandle->end(); ++bscandsemulationIter) {
+        m_trkbscandsemulation_phi->push_back(bscandsemulationIter->glbphi());
+        m_trkbscandsemulation_eta->push_back(bscandsemulationIter->glbeta());
+        m_trkbscandsemulation_pt->push_back(bscandsemulationIter->pt());
+        m_trkbscandsemulation_mass->push_back(bscandsemulationIter->mass());
+      }
+    }
+    if (TrackBsCandsEmulationHandle.isValid() && (Displaced == "Displaced" || Displaced == "Both")) {
+      for (bscandsemulationIter = TrackBsCandsEmulationHandle->begin(); bscandsemulationIter != TrackBsCandsEmulationHandle->end(); ++bscandsemulationIter) {
+        m_trkbscandsemulationExt_phi->push_back(bscandsemulationIter->glbphi());
+        m_trkbscandsemulationExt_eta->push_back(bscandsemulationIter->glbeta());
+        m_trkbscandsemulationExt_pt->push_back(bscandsemulationIter->pt());
+        m_trkbscandsemulationExt_mass->push_back(bscandsemulationIter->mass());
       }
     }
   } // end track bscands

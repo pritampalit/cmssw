@@ -252,84 +252,104 @@ void L1PhiMesonSelectionEmulationProducer::produce(edm::StreamID, edm::Event& iE
   L1PhiMesonEmulationOutput->reserve(nPhiMesonOutputApproximate);
   //L1PhiMesonOutputRefVec->reserve(nPhiMesonOutputApproximate);
   
+  ap_ufixed<64, 32> etaphi_conv = 1.0 / ETAPHI_LSB;
+  ap_ufixed<64, 32> z0_conv = 1.0 * Z0_LSB;
+
   for (size_t i = 0; i < nPosKaonOutputApproximate; i++) {
     const auto& trackPosKaonRef = l1PosKaonTracksHandle->at(i);
     const auto& trackPosKaon = *trackPosKaonRef;
     
-    ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize, AP_RND_CONV, AP_SAT> inputTrkPtPos;
-    inputTrkPtPos.V = trackPosKaon.getTrackWord()(TTTrack_TrackWord::TrackBitLocations::kRinvMSB - 1,TTTrack_TrackWord::TrackBitLocations::kRinvLSB);
-    ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize, AP_RND_CONV, AP_SAT> trkptPos = inputTrkPtPos;
+    ap_uint<TrackBitWidths::kPtSize> ptEmulationBitsPos = trackPosKaon.getTrackWord()(TTTrack_TrackWord::TrackBitLocations::kRinvMSB - 1, TTTrack_TrackWord::TrackBitLocations::kRinvLSB);
+    ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize> ptEmulationPos;
+    ptEmulationPos.V = ptEmulationBitsPos.range();
+    double trkptPos = ptEmulationPos.to_double();
 
-    ap_int<TrackBitWidths::kEtaSize> trketainputPos;
-    trketainputPos.V = trackPosKaon.getTrackWord()(TTTrack_TrackWord::TrackBitLocations::kTanlMSB, TTTrack_TrackWord::TrackBitLocations::kTanlLSB);
-    ap_ufixed<64, 32> etaphi_conv = 1.0 / ETAPHI_LSB;
-    ap_int<TrackBitWidths::kEtaSize> trketaPos = etaphi_conv * trketainputPos;
-    //ap_int<TrackBitWidths::kEtaSize> trketaPos = trketainputPos / 2.;
+    TTTrack_TrackWord::tanl_t etaEmulationBitsPos = trackPosKaon.getTanlWord();
+    ap_fixed<TrackBitWidths::kEtaSize, TrackBitWidths::kEtaMagSize> etaEmulationPos;
+    etaEmulationPos.V = etaEmulationBitsPos.range();
+    double trketaPos = etaEmulationPos.to_double();
 
-    ap_int<TTTrack_TrackWord::TrackBitWidths::kPhiSize> trkphiinputPos;
-    trkphiinputPos.V = trackPosKaon.getTrackWord()(TTTrack_TrackWord::TrackBitLocations::kPhiMSB, TTTrack_TrackWord::TrackBitLocations::kPhiLSB);
-    ap_int<TTTrack_TrackWord::TrackBitWidths::kPhiSize> trkphiPos = etaphi_conv * trkphiinputPos;
+    double trkphiPos = trackPosKaon.getPhi();
 
-    ap_int<TTTrack_TrackWord::TrackBitWidths::kZ0Size> trkz0inputPos;
-    trkz0inputPos.V = trackPosKaon.getTrackWord()(TTTrack_TrackWord::TrackBitLocations::kZ0MSB, TTTrack_TrackWord::TrackBitLocations::kZ0LSB);
-    ap_ufixed<64, 32> z0_conv = 1.0 / Z0_LSB;
-    ap_int<TTTrack_TrackWord::TrackBitWidths::kZ0Size> trkz0Pos = z0_conv * trkz0inputPos;
-    //ap_int<TTTrack_TrackWord::TrackBitWidths::kZ0Size> trkz0Pos = trkz0inputPos / 0.05;
+    double trkz0Pos = trackPosKaon.getZ0();
 
-    ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize, AP_RND_CONV, AP_SAT> trkpxPos = trkptPos.to_double()*cos(trkphiPos.to_double());
-    ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize, AP_RND_CONV, AP_SAT> trkpyPos = trkptPos.to_double()*sin(trkphiPos.to_double());
-    ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize, AP_RND_CONV, AP_SAT> trkpzPos = trkptPos.to_double()*sinh(trketaPos.to_double());
+    double trkpxPos = trkptPos*cos(trkphiPos);
+    double trkpyPos = trkptPos*sin(trkphiPos);
+    double trkpzPos = trkptPos*sinh(trketaPos);
+
+    //    std::cout << "nNegKaonOutputApproximate : " << nNegKaonOutputApproximate << std::endl;
     
     for (size_t j = 0; j < nNegKaonOutputApproximate; j++) {
       const auto& trackNegKaonRef = l1NegKaonTracksHandle->at(j);
       const auto& trackNegKaon = *trackNegKaonRef;
       
-      ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize, AP_RND_CONV, AP_SAT> inputTrkPtNeg;
-      inputTrkPtNeg.V = trackNegKaon.getTrackWord()(TTTrack_TrackWord::TrackBitLocations::kRinvMSB - 1,TTTrack_TrackWord::TrackBitLocations::kRinvLSB);
-      ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize, AP_RND_CONV, AP_SAT> trkptNeg = inputTrkPtNeg;
+      ap_uint<TrackBitWidths::kPtSize> ptEmulationBitsNeg = trackNegKaon.getTrackWord()(TTTrack_TrackWord::TrackBitLocations::kRinvMSB - 1, TTTrack_TrackWord::TrackBitLocations::kRinvLSB);
+    ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize> ptEmulationNeg;
+    ptEmulationNeg.V = ptEmulationBitsNeg.range();
+    double trkptNeg = ptEmulationNeg.to_double();
+
+    TTTrack_TrackWord::tanl_t etaEmulationBitsNeg = trackNegKaon.getTanlWord();
+    ap_fixed<TrackBitWidths::kEtaSize, TrackBitWidths::kEtaMagSize> etaEmulationNeg;
+    etaEmulationNeg.V = etaEmulationBitsNeg.range();
+    double trketaNeg = etaEmulationNeg.to_double();
+
+    double trkphiNeg = trackNegKaon.getPhi();
+
+    double trkz0Neg = trackNegKaon.getZ0();
+
+    double trkpxNeg = trkptNeg*cos(trkphiNeg);
+    double trkpyNeg = trkptNeg*sin(trkphiNeg);
+    double trkpzNeg = trkptNeg*sinh(trketaNeg);
       
-      ap_int<TrackBitWidths::kEtaSize> trketainputNeg;
-      trketainputNeg.V = trackNegKaon.getTrackWord()(TTTrack_TrackWord::TrackBitLocations::kTanlMSB, TTTrack_TrackWord::TrackBitLocations::kTanlLSB);
-      //    ap_ufixed<64, 32> etaphi_conv = 1.0 / ETAPHI_LSB;
-      ap_int<TrackBitWidths::kEtaSize> trketaNeg = etaphi_conv * trketainputNeg;
-      
-      ap_int<TTTrack_TrackWord::TrackBitWidths::kPhiSize> trkphiinputNeg;
-      trkphiinputNeg.V = trackNegKaon.getTrackWord()(TTTrack_TrackWord::TrackBitLocations::kPhiMSB, TTTrack_TrackWord::TrackBitLocations::kPhiLSB);
-      ap_int<TTTrack_TrackWord::TrackBitWidths::kPhiSize> trkphiNeg = etaphi_conv * trkphiinputNeg;
-      
-      ap_int<TTTrack_TrackWord::TrackBitWidths::kZ0Size> trkz0inputNeg;
-      trkz0inputNeg.V = trackNegKaon.getTrackWord()(TTTrack_TrackWord::TrackBitLocations::kZ0MSB, TTTrack_TrackWord::TrackBitLocations::kZ0LSB);
-      //ap_ufixed<64, 32> z0_conv = 1.0 / Z0_LSB;
-      ap_int<TTTrack_TrackWord::TrackBitWidths::kZ0Size> trkz0Neg = z0_conv * trkz0inputNeg;
-      
-      ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize, AP_RND_CONV, AP_SAT> trkpxNeg = trkptNeg.to_double()*cos(trkphiNeg.to_double());
-      ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize, AP_RND_CONV, AP_SAT> trkpyNeg = trkptNeg.to_double()*sin(trkphiNeg.to_double());
-      ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize, AP_RND_CONV, AP_SAT> trkpzNeg = trkptNeg.to_double()*sinh(trketaNeg.to_double());
-      
-      double trkdrpairPhi = sqrt((trkphiPos.to_double() - trkphiNeg.to_double())*(trkphiPos.to_double() - trkphiNeg.to_double()) + (trketaPos.to_double() - trketaNeg.to_double())*(trketaPos.to_double() - trketaNeg.to_double()));
+    double trkdrpairPhi = sqrt(pow((trkphiPos - trkphiNeg),2) + pow((trketaPos - trketaNeg),2));
       // write mass calculation here , for hardware specially
 
-      double trkmasspairPhi = sqrt(2*trkptPos.to_double()*trkptNeg.to_double()*(cosh(trketaPos.to_double() - trketaNeg.to_double())-cos(trkphiPos.to_double() - trkphiNeg.to_double())));
+    //    std::cout << "beforfe mass cut trkptPos : " << trkptPos << "\t trkptNeg : " << trkptNeg << "\t trketaPos : " << trketaPos << "\t trketaNeg : " << trketaNeg << "\t trkPhiPos : " << trkphiPos << "\t trkPhiNeg : " << trkphiNeg << std::endl;
+
+    //std::cout << "cosh in mass : " << cosh(trketaPos - trketaNeg) << "\t cos in mass : " << cos(trkphiPos - trkphiNeg) << std::endl;
+
+      double trkmasspairPhi = sqrt(2*trkptPos*trkptNeg*(cosh(trketaPos - trketaNeg)-cos(trkphiPos - trkphiNeg)));
+
+      //std::cout << "trkmass pair phi beforfe mass cut : " << trkmasspairPhi << std::endl;
+      
+      //std::cout << "trkdr pair phi beforfe mass cut : " << trkdrpairPhi << std::endl;
       if (trkdrpairPhi > dRmax_) continue; 
       if (trkmasspairPhi < tkpairMmin_ || trkmasspairPhi > tkpairMmax_) continue; // do it before
 
-      ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize, AP_RND_CONV, AP_SAT> trkpxPhi = trkpxNeg + trkpxPos;
-      ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize, AP_RND_CONV, AP_SAT> trkpyPhi = trkpyNeg + trkpyPos;
-      ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize, AP_RND_CONV, AP_SAT> trkpzPhi = trkpzNeg + trkpzPos;
+      double trkpxPhi = trkpxNeg + trkpxPos;
+      double trkpyPhi = trkpyNeg + trkpyPos;
+      double trkpzPhi = trkpzNeg + trkpzPos;
       
+      //std::cout << "phi emul pt in double format : " << sqrt(pow(trkpxPhi,2) + pow(trkpyPhi,2)) << std::endl;
+      // std::cout << "phi emul eta in double format : " << asinh(trkpzPhi/sqrt(pow(trkpxPhi,2) + pow(trkpyPhi,2))) << std::endl;
+
       l1t::TkLightMesonWord::valid_t trkvalidPhi =   trackPosKaon.getValid() && trackNegKaon.getValid();
-      l1t::TkLightMesonWord::pt_t trkptPhi = sqrt(pow(trkpxPhi.to_double(),2) + pow(trkpyPhi.to_double(),2)); // use Pow()
-      l1t::TkLightMesonWord::glbphi_t trkphiPhi = atan(trkpyPhi.to_double()/trkpxPhi.to_double());
-      l1t::TkLightMesonWord::glbeta_t trketaPhi = asinh(trkpzPhi.to_double()/trkptPhi.to_double());
-      l1t::TkLightMesonWord::z0_t trkz0Phi = trkz0Pos + trkz0Neg;
-      l1t::TkLightMesonWord::mass_t trkmassPhi = sqrt(2*trkptPos.to_double()*trkptNeg.to_double()*(cosh(trketaPos.to_double() - trketaNeg.to_double())-cos(trkphiPos.to_double() - trkphiNeg.to_double())));
+      l1t::TkLightMesonWord::pt_t trkptPhi = sqrt(pow(trkpxPhi,2) + pow(trkpyPhi,2)); // use Pow()
+      l1t::TkLightMesonWord::glbphi_t trkphiPhi = atan(trkpyPhi/trkpxPhi) / ETAPHI_LSB;
+      l1t::TkLightMesonWord::glbeta_t trketaPhi = asinh(trkpzPhi/sqrt(pow(trkpxPhi,2) + pow(trkpyPhi,2))) / ETAPHI_LSB;
+      l1t::TkLightMesonWord::z0_t trkz0Phi = (trkz0Pos + trkz0Neg) / Z0_LSB;
+      l1t::TkLightMesonWord::mass_t trkmassPhi = sqrt(2*trkptPos*trkptNeg*(cosh(trketaPos - trketaNeg)-cos(trkphiPos - trkphiNeg)));
       l1t::TkLightMesonWord::type_t trktypePhi = l1t::TkLightMesonWord::TkLightMesonTypes::kPhiType;
       l1t::TkLightMesonWord::ntracks_t trkntracksPhi = 2;
       l1t::TkLightMesonWord::unassigned_t trkunassignedPhi = 0;
+
+      //std::cout << "phi emul pt just before booking trkphiWord (original and emulation ): : " << trkptPhi.to_double() << std::endl;
+      //std::cout << "phi emul eta just before booking trkphiWord (original and emulation ): : " << trketaPhi.to_double() << std::endl;
+
       
+      //std::cout << "trkPhiword before" << std::endl;
+
+      //      std::cout << __PRETTY_FUNCTION__ << __LINE__ << std::endl;
+
       l1t::TkLightMesonWord trkPhiWord(trkvalidPhi, trkptPhi, trkphiPhi, trketaPhi, trkz0Phi, trkmassPhi, trktypePhi, trkntracksPhi, trkunassignedPhi);
       
+      //std::cout << "trkPhiword after" << std::endl;
+      //std::cout << "trk phi emulation eta inside analyzer (original and emulation ): " << trkPhiWord.glbeta()  <<  std::endl;
+      std::cout << "trk phi emulation mass inside analyzer (original and emulation ): " << trkPhiWord.mass()  <<  std::endl;
+
       L1PhiMesonEmulationOutput->push_back(trkPhiWord);
+
+      
     }
   }
 
