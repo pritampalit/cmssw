@@ -4,11 +4,11 @@ L1BsMesonSelectionEmulationProducer = cms.EDProducer('L1BsMesonSelectionEmulatio
   l1PhiMesonWordInputTag = cms.InputTag("L1PhiMesonSelectionEmulationProducer","Level1TTPhiMesonSelectedEmulation"),
   outputCollectionName = cms.string("Level1TTBsMesonSelectedEmulation"),
   cutSet = cms.PSet(
-                   dRmax = cms.double(0.12),
+                   dRmax = cms.double(1.0),
                    #dxymax = cms.double(1.0),
                    #dzmax = cms.double(1.0),
-                   tkpairMmin = cms.double(1.0),
-                   tkpairMmax = cms.double(1.03)
+                   tkpairMmin = cms.double(5.29),
+                   tkpairMmax = cms.double(5.48)
                    ),
   debug = cms.int32(0)
 )

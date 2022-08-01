@@ -244,7 +244,7 @@ void L1PhiMesonSelectionProducer::produce(edm::StreamID, edm::Event& iEvent, con
     float l1postkpy = l1postkpt*sin(l1postkphi);
     float l1postkpz = l1postkpt*sinh(l1postketa);
     float l1postke = l1postkpt*cosh(l1postketa);
-
+ 
     math::XYZTLorentzVector PosKaonP4(l1postkpx, l1postkpy, l1postkpz, l1postke);
 
     for (size_t j = 0; j < nNegKaonOutputApproximate; j++) {
@@ -260,6 +260,18 @@ void L1PhiMesonSelectionProducer::produce(edm::StreamID, edm::Event& iEvent, con
     float l1negtkpy = l1negtkpt*sin(l1negtkphi);
     float l1negtkpz = l1negtkpt*sinh(l1negtketa);
     float l1negtke = l1negtkpt*cosh(l1negtketa);
+    
+    /*    std::cout << "Phi Sim trkptPos : " << l1postkpt << "\t trkptNeg : " << l1negtkpt << "\t trketaPos : " << l1postketa << "\t trketaNeg : " << l1negtketa << "\t trkPhiPos : " << l1postkphi << "\t trkPhiNeg : " << l1negtkphi << std::endl;
+
+    std::cout << "Phi Sim Pos Kaon track cos(l1postkphi) : " << cos(l1postkphi) << "\tsin(l1postkphi) : " << sin(l1postkphi) << "\tsinh(l1postketa) : " << sinh(l1postketa) << "\tcosh(l1postketa)" << cosh(l1postketa) << std::endl;
+
+    std::cout << "Phi Sim Pos kaon track px : " << l1postkpx << "\t py : " << l1postkpy << "\t pz : " << l1postkpz <<std::endl;
+    
+    std::cout << "Phi Sim cosh in mass : " << cosh(l1postketa - l1negtketa) << "\t cos in mass : " << cos(l1postkphi - l1negtkphi) << std::endl;*/
+
+    double trkmasspairPhiasinEmu = sqrt(2*l1postkpt*l1negtkpt*(cosh(l1postketa - l1negtketa)-cos(l1postkphi - l1negtkphi)));
+
+    ////    std::cout << "trkmass pair phi beforfe mass cut as in Emu: " << trkmasspairPhiasinEmu << std::endl;
 
     math::XYZTLorentzVector NegKaonP4(l1negtkpx, l1negtkpy, l1negtkpz, l1negtke);
 
@@ -267,6 +279,7 @@ void L1PhiMesonSelectionProducer::produce(edm::StreamID, edm::Event& iEvent, con
 
     TkPhiCandidate tkphi(PhiP4, trackPosKaonReftoPtr, trackNegKaonReftoPtr);
     
+    ////std::cout << "phi cand mass inside analyzer before mass cut from lorentvector: " << tkphi.p4().M() << std::endl;
     //    if (tkphi.dxyTrkPair() > dxymax_) continue;
     //if (std::fabs(tkphi.dzTrkPair()) > dzmax_) continue;
     if (tkphi.dRTrkPair() > dRmax_) continue;
@@ -274,7 +287,7 @@ void L1PhiMesonSelectionProducer::produce(edm::StreamID, edm::Event& iEvent, con
     if (tkphi.p4().M() < tkpairMmin_ || tkphi.p4().M() > tkpairMmax_) continue;
 
     //    std::cout << "phi cand eta inside analyzer : " << tkphi.eta() << std::endl;
-    std::cout << "phi cand mass inside analyzer : " << tkphi.p4().M() << std::endl;
+    ////std::cout << "phi cand mass inside analyzer : " << tkphi.p4().M() << std::endl;
 
     L1PhiMesonOutput->push_back(tkphi);
 

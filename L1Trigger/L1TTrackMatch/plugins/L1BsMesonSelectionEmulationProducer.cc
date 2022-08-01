@@ -286,7 +286,7 @@ void L1BsMesonSelectionEmulationProducer::produce(edm::StreamID, edm::Event& iEv
       l1t::TkLightMesonWord::z0_t trkz0Bs = trkz0Phi1 + trkz0Phi2;
       l1t::TkLightMesonWord::mass_t trkmassBs = sqrt(2*trkptPhi1*trkptPhi2*(cosh(trketaPhi1 - trketaPhi2)-cos(trkphiPhi1 - trkphiPhi2)));
       l1t::TkLightMesonWord::type_t trktypeBs = l1t::TkLightMesonWord::TkLightMesonTypes::kBsType;
-      l1t::TkLightMesonWord::ntracks_t trkntracksBs = 2;
+      l1t::TkLightMesonWord::ntracks_t trkntracksBs = 3;
       l1t::TkLightMesonWord::unassigned_t trkunassignedBs = 0;
       
       l1t::TkLightMesonWord trkBsWord(trkvalidBs, trkptBs, trkphiBs, trketaBs, trkz0Bs, trkmassBs, trktypeBs, trkntracksBs, trkunassignedBs);

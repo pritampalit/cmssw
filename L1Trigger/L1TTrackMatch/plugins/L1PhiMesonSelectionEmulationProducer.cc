@@ -304,13 +304,17 @@ void L1PhiMesonSelectionEmulationProducer::produce(edm::StreamID, edm::Event& iE
     double trkdrpairPhi = sqrt(pow((trkphiPos - trkphiNeg),2) + pow((trketaPos - trketaNeg),2));
       // write mass calculation here , for hardware specially
 
-    //    std::cout << "beforfe mass cut trkptPos : " << trkptPos << "\t trkptNeg : " << trkptNeg << "\t trketaPos : " << trketaPos << "\t trketaNeg : " << trketaNeg << "\t trkPhiPos : " << trkphiPos << "\t trkPhiNeg : " << trkphiNeg << std::endl;
+    /*    std::cout << "Phi Emu trkptPos : " << trkptPos << "\t trkptNeg : " << trkptNeg << "\t trketaPos : " << trketaPos << "\t trketaNeg : " << trketaNeg << "\t trkPhiPos : " << trkphiPos << "\t trkPhiNeg : " << trkphiNeg << std::endl;
 
-    //std::cout << "cosh in mass : " << cosh(trketaPos - trketaNeg) << "\t cos in mass : " << cos(trkphiPos - trkphiNeg) << std::endl;
+    std::cout << "Phi Emu Pos Kaon track cos(trkphiPos) : " << cos(trkphiPos) << "\tsin(trkphiPos) : " << sin(trkphiPos) << "\tsinh(trketaPos) : " << sinh(trketaPos) << "\tcosh(trketaPos)" << std::endl;
+
+    std::cout << "Phi Emu Pos Kaon track px : " << trkpxPos << "\tpy : " << trkpyPos << "\tpz : " << trkpzPos << std::endl;
+
+    std::cout << "Phi Emu cosh in mass : " << cosh(trketaPos - trketaNeg) << "\t cos in mass : " << cos(trkphiPos - trkphiNeg) << std::endl;*/
 
       double trkmasspairPhi = sqrt(2*trkptPos*trkptNeg*(cosh(trketaPos - trketaNeg)-cos(trkphiPos - trkphiNeg)));
 
-      //std::cout << "trkmass pair phi beforfe mass cut : " << trkmasspairPhi << std::endl;
+      ////      std::cout << "trkmass pair phi beforfe mass cut : " << trkmasspairPhi << std::endl;
       
       //std::cout << "trkdr pair phi beforfe mass cut : " << trkdrpairPhi << std::endl;
       if (trkdrpairPhi > dRmax_) continue; 
@@ -322,6 +326,8 @@ void L1PhiMesonSelectionEmulationProducer::produce(edm::StreamID, edm::Event& iE
       
       //std::cout << "phi emul pt in double format : " << sqrt(pow(trkpxPhi,2) + pow(trkpyPhi,2)) << std::endl;
       // std::cout << "phi emul eta in double format : " << asinh(trkpzPhi/sqrt(pow(trkpxPhi,2) + pow(trkpyPhi,2))) << std::endl;
+
+      ////std::cout << "trk phi emulation mass inside analyzer (original and emulation ) double format: " << sqrt(2*trkptPos*trkptNeg*(cosh(trketaPos - trketaNeg)-cos(trkphiPos - trkphiNeg)))  <<  std::endl;
 
       l1t::TkLightMesonWord::valid_t trkvalidPhi =   trackPosKaon.getValid() && trackNegKaon.getValid();
       l1t::TkLightMesonWord::pt_t trkptPhi = sqrt(pow(trkpxPhi,2) + pow(trkpyPhi,2)); // use Pow()
@@ -341,11 +347,13 @@ void L1PhiMesonSelectionEmulationProducer::produce(edm::StreamID, edm::Event& iE
 
       //      std::cout << __PRETTY_FUNCTION__ << __LINE__ << std::endl;
 
+      ////std::cout << "trk phi emulation mass inside analyzer (original and emulation ) before phi booking: " << trkmassPhi  <<  std::endl;
+
       l1t::TkLightMesonWord trkPhiWord(trkvalidPhi, trkptPhi, trkphiPhi, trketaPhi, trkz0Phi, trkmassPhi, trktypePhi, trkntracksPhi, trkunassignedPhi);
       
       //std::cout << "trkPhiword after" << std::endl;
       //std::cout << "trk phi emulation eta inside analyzer (original and emulation ): " << trkPhiWord.glbeta()  <<  std::endl;
-      std::cout << "trk phi emulation mass inside analyzer (original and emulation ): " << trkPhiWord.mass()  <<  std::endl;
+      ////std::cout << "trk phi emulation mass inside analyzer (original and emulation ): " << trkPhiWord.mass()  <<  std::endl;
 
       L1PhiMesonEmulationOutput->push_back(trkPhiWord);
 

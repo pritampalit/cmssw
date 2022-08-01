@@ -41,7 +41,7 @@ process.MessageLogger.cerr.INFO.limit = cms.untracked.int32(0) # default: 0
 # input and output
 ############################################################
 
-process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(200))
+process.maxEvents = cms.untracked.PSet(input = cms.untracked.int32(400))
 
 readFiles = cms.untracked.vstring(
 #"file:/afs/cern.ch/work/p/ppalit/public/HLSL1Trigger/EvtGenforBstoPhiPhi/test_benjamin_23434/step3.root",
@@ -242,7 +242,7 @@ process.source = cms.Source ("PoolSource",
                             )
 
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string('bstophiphiFromttbarinput_200evt.root'), closeFileFast = cms.untracked.bool(True))
+process.TFileService = cms.Service("TFileService", fileName = cms.string('bstophiphiFromttbarinput_400evt.root'), closeFileFast = cms.untracked.bool(True))
 
 
 ############################################################
