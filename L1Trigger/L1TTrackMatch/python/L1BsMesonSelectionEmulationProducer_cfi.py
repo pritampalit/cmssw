@@ -5,6 +5,7 @@ L1BsMesonSelectionEmulationProducer = cms.EDProducer('L1BsMesonSelectionEmulatio
   outputCollectionName = cms.string("Level1TTBsMesonSelectedEmulation"),
   cutSet = cms.PSet(
                    dRmax = cms.double(1.0),
+                   dRmin = cms.double(0.2),
                    #dxymax = cms.double(1.0),
                    #dzmax = cms.double(1.0),
                    tkpairMmin = cms.double(5.29),

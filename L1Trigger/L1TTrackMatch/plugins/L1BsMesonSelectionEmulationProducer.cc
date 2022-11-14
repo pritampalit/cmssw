@@ -122,7 +122,7 @@ private:
     
   const std::string outputCollectionName_;
   const edm::ParameterSet cutSet_;
-  const double dRmax_, tkpairMmin_, tkpairMmax_;
+  const double dRmax_, dRmin_, tkpairMmin_, tkpairMmax_;
   //bool processSimulatedTracks_, processEmulatedTracks_;
   int debug_;
 
@@ -136,6 +136,7 @@ L1BsMesonSelectionEmulationProducer::L1BsMesonSelectionEmulationProducer(const e
       outputCollectionName_(iConfig.getParameter<std::string>("outputCollectionName")),
     cutSet_(iConfig.getParameter<edm::ParameterSet>("cutSet")),
     dRmax_(cutSet_.getParameter<double>("dRmax")),
+    dRmin_(cutSet_.getParameter<double>("dRmin")),
     //    dzmax_(cutSet_.getParameter<double>("dzmax")),
     tkpairMmin_(cutSet_.getParameter<double>("tkpairMmin")),
     tkpairMmax_(cutSet_.getParameter<double>("tkpairMmax")),
@@ -272,7 +273,7 @@ void L1BsMesonSelectionEmulationProducer::produce(edm::StreamID, edm::Event& iEv
 
     double trkmasspairBs = sqrt(2*trkptPhi1*trkptPhi2*(cosh(trketaPhi1 - trketaPhi2)-cos(trkphiPhi1 - trkphiPhi2)));
 
-      if (trkdrpairBs > dRmax_) continue; 
+      if (trkdrpairBs > dRmax_ || trkdrpairBs < dRmin_) continue; 
       if (trkmasspairBs < tkpairMmin_ || trkmasspairBs > tkpairMmax_) continue; // do it before
 
       double trkpxBs = trkpxPhi2 + trkpxPhi1;
@@ -282,8 +283,8 @@ void L1BsMesonSelectionEmulationProducer::produce(edm::StreamID, edm::Event& iEv
       l1t::TkLightMesonWord::valid_t trkvalidBs =   tkPhiMesonWord1.valid() && tkPhiMesonWord2.valid();
       l1t::TkLightMesonWord::pt_t trkptBs = sqrt(pow(trkpxBs,2) + pow(trkpyBs,2)); // use Pow()
       l1t::TkLightMesonWord::glbphi_t trkphiBs = atan(trkpyBs/trkpxBs);
-      l1t::TkLightMesonWord::glbeta_t trketaBs = asinh(trkpzBs/sqrt(pow(trkpxBs,2) + pow(trkpyBs,2)));
-      l1t::TkLightMesonWord::z0_t trkz0Bs = trkz0Phi1 + trkz0Phi2;
+      l1t::TkLightMesonWord::glbeta_t trketaBs = asinh(trkpzBs/sqrt(pow(trkpxBs,2) + pow(trkpyBs,2))) / ETAPHI_LSB;
+      l1t::TkLightMesonWord::z0_t trkz0Bs = ((trkz0Phi1 + trkz0Phi2) / Z0_LSB) * 0.5;
       l1t::TkLightMesonWord::mass_t trkmassBs = sqrt(2*trkptPhi1*trkptPhi2*(cosh(trketaPhi1 - trketaPhi2)-cos(trkphiPhi1 - trkphiPhi2)));
       l1t::TkLightMesonWord::type_t trktypeBs = l1t::TkLightMesonWord::TkLightMesonTypes::kBsType;
       l1t::TkLightMesonWord::ntracks_t trkntracksBs = 3;
@@ -339,7 +340,8 @@ void L1BsMesonSelectionEmulationProducer::fillDescriptions(edm::ConfigurationDes
   desc.add<std::string>("outputCollectionName", "Level1TTKaonTracksSelected");
   {
     edm::ParameterSetDescription descCutSet;
-    descCutSet.add<double>("dRmax", 0.12)->setComment("dr must be less than this value, []");
+    descCutSet.add<double>("dRmax", 1.0)->setComment("dr must be less than this value, []");
+    descCutSet.add<double>("dRmin", 0.2)->setComment("dr must be less than this value, []");
     //    descCutSet.add<double>("dxymax", 1.0)->setComment("dxy must be less than this value, [cm]");
     //descCutSet.add<double>("dzmax", 1.0)->setComment("dz must be less than this value, [cm]");
     descCutSet.add<double>("tkpairMmin", 1.0)->setComment("tkpair mass must be greater than this value, [GeV]");

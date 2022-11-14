@@ -26,6 +26,7 @@
 #include "DataFormats/L1TrackTrigger/interface/TTCluster.h"
 #include "DataFormats/L1TrackTrigger/interface/TTStub.h"
 #include "DataFormats/L1TrackTrigger/interface/TTTrack.h"
+#include "DataFormats/L1TrackTrigger/interface/TTTrack_TrackWord.h"
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingParticle.h"
 #include "SimDataFormats/TrackingAnalysis/interface/TrackingVertex.h"
 #include "SimDataFormats/TrackingHit/interface/PSimHitContainer.h"
@@ -34,6 +35,7 @@
 #include "SimTracker/TrackTriggerAssociation/interface/TTStubAssociationMap.h"
 #include "SimTracker/TrackTriggerAssociation/interface/TTTrackAssociationMap.h"
 #include "Geometry/Records/interface/StackedTrackerGeometryRecord.h"
+#include "DataFormats/Common/interface/RefToPtr.h"
 
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
 #include "DataFormats/JetReco/interface/GenJet.h"
@@ -110,6 +112,39 @@ using namespace l1t;
 //                          //
 //////////////////////////////
 
+namespace l1tntupleemu {
+  const unsigned int kInternalPhiWidth{8};
+  const unsigned int kGlobalPhiExtra{4};
+  static constexpr double minPhi0{-0.7853981696};
+  typedef ap_uint<TTTrack_TrackWord::TrackBitWidths::kPhiSize> global_phi_t;
+  //typedef ap_uint<15> global_phislice_t;                                                                                                                               
+  const unsigned int kGlobalPhiBins = 1 << kInternalPhiWidth;
+  //  const unsigned int kGlobalPhiTotalBins = 1 << TTTrack_TrackWord::TrackBitWidths::kPhiSize;                                                                         
+  //const unsigned int kGlobalPhiTotalBins = 1 << 12;                                                                                                                    
+  const double kStepPhi = (2 * -minPhi0) / kGlobalPhiBins;
+  const unsigned int kNSector{9};
+  const unsigned int kNQuadrants{4};
+  double undigitizeSignedValue(unsigned int twosValue, unsigned int nBits) {
+    // Check that none of the bits above the nBits-1 bit, in a range of [0, nBits-1], are set.                                                                           
+    // This makes sure that it isn't possible for the value represented by `twosValue` to be                                                                             
+    //  any bigger than ((1 << nBits) - 1).                                                                                                                              
+    assert((twosValue >> nBits) == 0);
+
+    // Convert from twos compliment to C++ signed integer (normal digitized value)                                                                                       
+    int digitizedValue = twosValue;
+    if (twosValue & (1 << (nBits - 1))) {  // check if the twosValue is negative                                                                                         
+      digitizedValue -= (1 << nBits);
+    }
+
+    // Convert to floating point value                                                                                                                                   
+    return (double(digitizedValue) + 0.5);
+  }
+
+}
+
+
+
+
 class L1TrackObjectNtupleMaker : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 private:
   // ----------constants, enums and typedefs ---------
@@ -129,6 +164,25 @@ public:
   void beginJob() override;
   void endJob() override;
   void analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) override;
+
+  l1tntupleemu::global_phi_t localToGlobalPhi(const TTTrack_TrackWord::phi_t& local_phi, const l1tntupleemu::global_phi_t& sector_shift) const;
+
+  std::vector<l1tntupleemu::global_phi_t> generatePhiSliceLUT (unsigned int N){
+    float sliceCentre = 0.0;
+    std::vector<l1tntupleemu::global_phi_t> phiLUT;
+    for (unsigned int q = 0; q <= N; q++) {
+      phiLUT.push_back((l1tntupleemu::global_phi_t)(sliceCentre / l1tntupleemu::kStepPhi));
+      //    std::cout << "Number of iterations : " << q << "\tslice centre : " << sliceCentre << "\tkStepPhi : " << l1tphimesonemu::kStepPhi << "\tDivision : " << sliceCentre / l1tphimesonemu::kStepPhi << "\tglobal phi_t of division : " << (l1tphimesonemu::global_phi_t)(sliceCentre / l1tphimesonemu::kStepPhi) << "\tphi Lut : " << phiLUT.at(q) << std::endl;                                                                                                                                                   
+
+      sliceCentre += 2 * M_PI / N;
+
+
+    }
+
+    return phiLUT;
+  } ;
+
+
 
   // Other member functions
   int getSelectedTrackIndex(const L1TrackRef& trackRef,
@@ -151,7 +205,8 @@ private:
     kEtaMagSize = 3,                                             // Width of eta magnitude (signed)                                                                      
   };
 
-
+  std::vector<l1tntupleemu::global_phi_t> phiQuadrants;
+  std::vector<l1tntupleemu::global_phi_t>  phiShift;
 
 
   int MyProcess;       // 11/13/211 for single electrons/muons/pions, 6/15 for pions from ttbar/taus, 1 for inclusive
@@ -294,11 +349,13 @@ private:
   std::vector<float>* m_trk_phi_local;
   std::vector<float>* m_trk_d0;  // (filled if nFitPar==5, else 999)
   std::vector<float>* m_trk_z0;
+  std::vector<float>* m_trk_charge;
 
   std::vector<float>* m_trk_pt_emu;
   std::vector<float>* m_trk_eta_emu;
   std::vector<float>* m_trk_phi_emu;
   std::vector<float>* m_trk_z0_emu;
+  std::vector<float>* m_trk_charge_emu;
 
   std::vector<float>* m_trk_chi2;
   std::vector<float>* m_trk_chi2dof;
@@ -521,10 +578,26 @@ private:
   std::vector<float>* m_trkphicands_eta;
   std::vector<float>* m_trkphicands_pt;
 
+  /*  std::vector<float>* m_trkphicandstrk1_phi;
+  std::vector<float>* m_trkphicandstrk1_eta;
+  std::vector<float>* m_trkphicandstrk1_pt;
+
+  std::vector<float>* m_trkphicandstrk2_phi;
+  std::vector<float>* m_trkphicandstrk2_eta;
+  std::vector<float>* m_trkphicandstrk2_pt;
+  */
   std::vector<float>* m_trkphicandsExt_mass;
   std::vector<float>* m_trkphicandsExt_phi;
   std::vector<float>* m_trkphicandsExt_eta;
   std::vector<float>* m_trkphicandsExt_pt;
+
+  /* std::vector<float>* m_trkphicandstrk1Ext_phi;
+  std::vector<float>* m_trkphicandstrk1Ext_eta;
+  std::vector<float>* m_trkphicandstrk1Ext_pt;
+
+  std::vector<float>* m_trkphicandstrk2Ext_phi;
+  std::vector<float>* m_trkphicandstrk2Ext_eta;
+  std::vector<float>* m_trkphicandstrk2Ext_pt;*/
 
   std::vector<float>* m_trkbscands_mass;
   std::vector<float>* m_trkbscands_phi;
@@ -693,11 +766,45 @@ L1TrackObjectNtupleMaker::L1TrackObjectNtupleMaker(edm::ParameterSet const& iCon
   tGeomToken_ = esConsumes<TrackerGeometry, TrackerDigiGeometryRecord>(edm::ESInputTag("", ""));
 
   usesResource(TFileService::kSharedResource);
+
+  phiQuadrants = L1TrackObjectNtupleMaker::generatePhiSliceLUT(l1tntupleemu::kNQuadrants);
+  phiShift = L1TrackObjectNtupleMaker::generatePhiSliceLUT(l1tntupleemu::kNSector);
+
+
 }
 
 /////////////
 // DESTRUCTOR
 L1TrackObjectNtupleMaker::~L1TrackObjectNtupleMaker() {}
+
+l1tntupleemu::global_phi_t L1TrackObjectNtupleMaker::localToGlobalPhi(const TTTrack_TrackWord::phi_t& local_phi, const l1tntupleemu::global_phi_t& sector_shift) const {
+  int PhiMin = 0;
+  int PhiMax = phiQuadrants.back();
+
+  //  std::cout << "PhiMax : " << PhiMax << std::endl;                                                                                                                   
+
+  //  int PhiMax = L1PhiMesonSelectionEmulationProducer::generatePhiSliceLUT(l1tntupleemu::kNQuadrants).back();                                                        
+  int phiMultiplier = TTTrack_TrackWord::TrackBitWidths::kPhiSize - l1tntupleemu::kInternalPhiWidth;
+
+  int tempPhi = floor(l1tntupleemu::undigitizeSignedValue(local_phi, TTTrack_TrackWord::TrackBitWidths::kPhiSize) / pow(2, phiMultiplier)) + sector_shift;
+
+  if (tempPhi < PhiMin) {
+    tempPhi = tempPhi + PhiMax;
+  } else if (tempPhi > PhiMax) {
+    tempPhi = tempPhi - PhiMax;
+  }  // else                                                                                                                                                            \
+                                                                                                                                                                         
+  //  tempPhi = tempPhi;                                                                                                                                                \
+                                                                                                                                                                         
+  //  std::cout << "tempPhi final value : " << tempPhi << std::endl;                                                                                                     
+
+  l1tntupleemu::global_phi_t globalPhi = l1tntupleemu::global_phi_t(tempPhi);
+
+  //  std::cout << "global phi : " << globalPhi << std::endl;                                                                                                            
+
+  return globalPhi;
+}
+
 
 //////////
 // END JOB
@@ -725,11 +832,13 @@ void L1TrackObjectNtupleMaker::beginJob() {
   m_trk_phi = new std::vector<float>;
   m_trk_phi_local = new std::vector<float>;
   m_trk_z0 = new std::vector<float>;
+  m_trk_charge = new std::vector<float>;
 
   m_trk_pt_emu = new std::vector<float>;
   m_trk_eta_emu = new std::vector<float>;
   m_trk_phi_emu = new std::vector<float>;
   m_trk_z0_emu = new std::vector<float>;
+  m_trk_charge_emu = new std::vector<float>;
 
   m_trk_d0 = new std::vector<float>;
   m_trk_chi2 = new std::vector<float>;
@@ -937,11 +1046,27 @@ void L1TrackObjectNtupleMaker::beginJob() {
   m_trkphicands_mass = new std::vector<float>;
   m_trkphicands_pt = new std::vector<float>;
 
+  /*  m_trkphicandstrk1_phi = new std::vector<float>;
+  m_trkphicandstrk1_mass = new std::vector<float>;
+  m_trkphicandstrk1_pt = new std::vector<float>;
+
+  m_trkphicandstrk2_phi = new std::vector<float>;
+  m_trkphicandstrk2_mass = new std::vector<float>;
+  m_trkphicandstrk2_pt = new std::vector<float>;*/
+
   m_trkphicandsExt_eta = new std::vector<float>;
   //m_trkphicand_vz = new std::vector<float>;
   m_trkphicandsExt_phi = new std::vector<float>;
   m_trkphicandsExt_mass = new std::vector<float>;
   m_trkphicandsExt_pt = new std::vector<float>;
+ 
+  /*  m_trkphicandstrk1Ext_phi = new std::vector<float>;
+  m_trkphicandstrk1Ext_mass = new std::vector<float>;
+  m_trkphicandstrk1Ext_pt = new std::vector<float>;
+
+  m_trkphicandstrk2Ext_phi = new std::vector<float>;
+  m_trkphicandstrk2Ext_mass = new std::vector<float>;
+  m_trkphicandstrk2Ext_pt = new std::vector<float>;*/
  
   m_trkbscands_eta = new std::vector<float>;
   //m_trkbscand_vz = new std::vector<float>;
@@ -985,11 +1110,13 @@ void L1TrackObjectNtupleMaker::beginJob() {
     eventTree->Branch("trk_pt", &m_trk_pt);
     eventTree->Branch("trk_eta", &m_trk_eta);
     eventTree->Branch("trk_phi", &m_trk_phi);
+    eventTree->Branch("trk_charge", &m_trk_charge);
 
     eventTree->Branch("trk_pt_emu", &m_trk_pt_emu);
     eventTree->Branch("trk_eta_emu", &m_trk_eta_emu);
     eventTree->Branch("trk_phi_emu", &m_trk_phi_emu);
     eventTree->Branch("trk_z0_emu", &m_trk_z0_emu);
+    eventTree->Branch("trk_charge_emu", &m_trk_charge_emu);
 
     eventTree->Branch("trk_phi_local", &m_trk_phi_local);
     eventTree->Branch("trk_d0", &m_trk_d0);
@@ -1231,6 +1358,14 @@ void L1TrackObjectNtupleMaker::beginJob() {
       eventTree->Branch("trkphicands_mass", &m_trkphicands_mass);
       eventTree->Branch("trkphicands_pt", &m_trkphicands_pt);
       eventTree->Branch("trkphicands_phi", &m_trkphicands_phi);
+      
+      /*      eventTree->Branch("trkphicandstrk1_eta", &m_trkphicandstrk1_eta);
+      eventTree->Branch("trkphicandstrk1_pt", &m_trkphicandstrk1_pt);
+      eventTree->Branch("trkphicandstrk1_phi", &m_trkphicandstrk1_phi);
+
+      eventTree->Branch("trkphicandstrk2_eta", &m_trkphicandstrk2_eta);
+      eventTree->Branch("trkphicandstrk2_pt", &m_trkphicandstrk2_pt);
+      eventTree->Branch("trkphicandstrk2_phi", &m_trkphicandstrk1_phi);*/
 
       eventTree->Branch("trkphicandsemulation_eta", &m_trkphicandsemulation_eta);
       //eventTree->Branch("trkphicandsemulation_vz", &m_trkphicandsemulation_vz);
@@ -1245,6 +1380,14 @@ void L1TrackObjectNtupleMaker::beginJob() {
       eventTree->Branch("trkphicandsExt_pt", &m_trkphicandsExt_pt);
       eventTree->Branch("trkphicandsExt_phi", &m_trkphicandsExt_phi);
 
+      /*      eventTree->Branch("trkphicandstrk1Ext_eta", &m_trkphicandstrk1Ext_eta);
+      eventTree->Branch("trkphicandstrk1Ext_pt", &m_trkphicandstrk1Ext_pt);
+      eventTree->Branch("trkphicandstrk1Ext_phi", &m_trkphicandstrk1Ext_phi);
+      
+      eventTree->Branch("trkphicandstrk2Ext_eta", &m_trkphicandstrk2Ext_eta);
+      eventTree->Branch("trkphicandstrk2Ext_pt", &m_trkphicandstrk2Ext_pt);
+      eventTree->Branch("trkphicandstrk2Ext_phi", &m_trkphicandstrk2Ext_phi);*/
+	    
       eventTree->Branch("trkphicandsemulationExt_eta", &m_trkphicandsemulationExt_eta);
       //eventTree->Branch("trkphicandsemulation_vz", &m_trkphicandsemulationExt_vz);
       eventTree->Branch("trkphicandsemulationExt_mass", &m_trkphicandsemulationExt_mass);
@@ -1302,11 +1445,13 @@ void L1TrackObjectNtupleMaker::analyze(const edm::Event& iEvent, const edm::Even
     m_trk_pt->clear();
     m_trk_eta->clear();
     m_trk_phi->clear();
+    m_trk_charge->clear();
 
     m_trk_pt_emu->clear();
     m_trk_eta_emu->clear();
     m_trk_phi_emu->clear();
     m_trk_z0_emu->clear();
+    m_trk_charge_emu->clear();
 
     m_trk_phi_local->clear();
     m_trk_d0->clear();
@@ -1869,22 +2014,10 @@ void L1TrackObjectNtupleMaker::analyze(const edm::Event& iEvent, const edm::Even
       float tmp_trk_z0 = iterL1Track->z0();            //cm
       int tmp_trk_nFitPars = iterL1Track->nFitPars();  //4 or 5
 
-      ap_uint<TrackBitWidths::kPtSize> ptEmulationBits = iterL1Track->getTrackWord()(
-									  TTTrack_TrackWord::TrackBitLocations::kRinvMSB - 1, TTTrack_TrackWord::TrackBitLocations::kRinvLSB);
-      ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize> ptEmulation;
-      ptEmulation.V = ptEmulationBits.range();
+      int tmp_trk_charge = std::signbit(iterL1Track->rInv());
+      //std::cout << "Trk pt : " << tmp_trk_pt << "\tTrk eta : " << tmp_trk_eta << "\tTrk Phi : " << tmp_trk_phi <<  "\tTrk z0 : " << tmp_trk_z0 << std::endl;
 
-      double tmp_trk_pt_emu = ptEmulation.to_double();
-
-      TTTrack_TrackWord::tanl_t etaEmulationBits = iterL1Track->getTanlWord();
-      ap_fixed<TrackBitWidths::kEtaSize, TrackBitWidths::kEtaMagSize> etaEmulation;
-      etaEmulation.V = etaEmulationBits.range();
-
-      double tmp_trk_eta_emu = etaEmulation.to_double();
-
-      double tmp_trk_phi_emu = iterL1Track->getPhi();
-
-      double tmp_trk_z0_emu = iterL1Track->getZ0();
+      
 
       float tmp_trk_d0 = -999;
       if (tmp_trk_nFitPars == 5) {
@@ -1977,11 +2110,7 @@ void L1TrackObjectNtupleMaker::analyze(const edm::Event& iEvent, const edm::Even
       m_trk_phi->push_back(tmp_trk_phi);
       m_trk_phi_local->push_back(tmp_trk_phi_local);
       m_trk_z0->push_back(tmp_trk_z0);
-
-      m_trk_pt_emu->push_back(tmp_trk_pt_emu);
-      m_trk_eta_emu->push_back(tmp_trk_eta_emu);
-      m_trk_phi_emu->push_back(tmp_trk_phi_emu);
-      m_trk_z0_emu->push_back(tmp_trk_z0_emu);
+      m_trk_charge->push_back(tmp_trk_charge);
 
       if (tmp_trk_nFitPars == 5)
         m_trk_d0->push_back(tmp_trk_d0);
@@ -2058,6 +2187,35 @@ void L1TrackObjectNtupleMaker::analyze(const edm::Event& iEvent, const edm::Even
       m_trk_gtt_pt->push_back(l1track_ref->momentum().perp());
       m_trk_gtt_eta->push_back(l1track_ref->momentum().eta());
       m_trk_gtt_phi->push_back(l1track_ref->momentum().phi());
+
+      ap_uint<TrackBitWidths::kPtSize> ptEmulationBits = l1track_ref->getTrackWord()(
+									  TTTrack_TrackWord::TrackBitLocations::kRinvMSB - 1, TTTrack_TrackWord::TrackBitLocations::kRinvLSB);
+      ap_ufixed<TrackBitWidths::kPtSize, TrackBitWidths::kPtMagSize> ptEmulation;
+      ptEmulation.V = ptEmulationBits.range();
+
+      double tmp_trk_pt_emu = ptEmulation.to_double();
+
+      TTTrack_TrackWord::tanl_t etaEmulationBits = l1track_ref->getTanlWord();
+      ap_fixed<TrackBitWidths::kEtaSize, TrackBitWidths::kEtaMagSize> etaEmulation;
+      etaEmulation.V = etaEmulationBits.range();
+
+      double tmp_trk_eta_emu = etaEmulation.to_double();
+
+      double tmp_trk_localphi_emu = l1track_ref->getPhi();
+      l1tntupleemu::global_phi_t tmp_trk_phi_emuPos = L1TrackObjectNtupleMaker::localToGlobalPhi(l1track_ref->getPhiWord(), phiShift[l1track_ref->phiSector()]);
+      double tmp_trk_phi_emu = tmp_trk_phi_emuPos*l1tntupleemu::kStepPhi ;
+
+      //      double tmp_trk_phi_emu = l1track_ref->getPhi();
+
+      double tmp_trk_z0_emu = l1track_ref->getZ0();
+
+      //      std::cout << "Trk pt emu : " << tmp_trk_pt_emu << "\tTrk eta emu : " << tmp_trk_eta_emu << "\tTrk Phi emu : " << tmp_trk_phi_emu <<  "\tTrk z0 emu : " << tmp_trk_z0_emu << std::endl;
+
+      m_trk_pt_emu->push_back(tmp_trk_pt_emu);
+      m_trk_eta_emu->push_back(tmp_trk_eta_emu);
+      m_trk_phi_emu->push_back(tmp_trk_phi_emu);
+      m_trk_z0_emu->push_back(tmp_trk_z0_emu);
+
       m_trk_selected_index->push_back(getSelectedTrackIndex(l1track_ref, TTTrackSelectedHandle));
       m_trk_selected_emulation_index->push_back(getSelectedTrackIndex(l1track_ref, TTTrackSelectedEmulationHandle));
 
@@ -2928,16 +3086,18 @@ void L1TrackObjectNtupleMaker::analyze(const edm::Event& iEvent, const edm::Even
     if (!TrackPhiCandsEmulationHandle.isValid() && (Displaced == "Displaced" || Displaced == "Both"))
       edm::LogWarning("DataNotFound") << "\nWarning: TrackPhiCandsHandle not found" << std::endl;
     
-    ////    if (TrackPhiCandsHandle.isValid()) std::cout << "TrackPhiCandsHandle size : " << TrackPhiCandsHandle->size() << std::endl;
-
+    //if (TrackPhiCandsHandle.isValid()) std::cout << "TrackPhiCandsHandle size : " << TrackPhiCandsHandle->size() << std::endl;
     if (TrackPhiCandsHandle.isValid() && (Displaced == "Prompt" || Displaced == "Both")) {
       for (phicandsIter = TrackPhiCandsHandle->begin(); phicandsIter != TrackPhiCandsHandle->end(); ++phicandsIter) {
-	//std::cout << "phi can eta inside ntuplemaker : " << phicandsIter->eta() << std::endl;
+	//std::cout << "phi can eta inside ntuplemaker : " << phicandsIter->eta() << "\tphi : " << phicandsIter->phi() << "\tpt : " << phicandsIter->pt() << "\tmass : " << phicandsIter->mass() << std::endl;
         m_trkphicands_phi->push_back(phicandsIter->phi());
         m_trkphicands_eta->push_back(phicandsIter->eta());
         m_trkphicands_pt->push_back(phicandsIter->pt());
         m_trkphicands_mass->push_back(phicandsIter->mass());
-	/////std::cout << "phi cand mass inside ntuplemaker : " << phicandsIter->mass() << std::endl;
+	//std::cout << "phi cand mass inside ntuplemaker : " << phicandsIter->mass() << std::endl;
+	//const edm::Ptr<L1Track>& trackKaon1Ref = edm::refToPtr(phicandsIter->trkPtr(0));
+	//std::cout << "Phi cand track1 pt : " << phicandsIter->trkPtr(0)->momentum().perp() << std::endl;
+	
       }
     }
     if (TrackPhiCandsHandle.isValid() && (Displaced == "Displaced" || Displaced == "Both")) {
@@ -2950,15 +3110,14 @@ void L1TrackObjectNtupleMaker::analyze(const edm::Event& iEvent, const edm::Even
       }
     }
     
-    ////    if (TrackPhiCandsEmulationHandle.isValid()) std::cout << "TrackPhiCandsEmulationHandle size : " << TrackPhiCandsEmulationHandle->size() << std::endl;
+    //    if (TrackPhiCandsEmulationHandle.isValid()) std::cout << "TrackPhiCandsEmulationHandle size : " << TrackPhiCandsEmulationHandle->size() << std::endl;
     if (TrackPhiCandsEmulationHandle.isValid() && (Displaced == "Prompt" || Displaced == "Both")) {
       for (phicandsemulationIter = TrackPhiCandsEmulationHandle->begin(); phicandsemulationIter != TrackPhiCandsEmulationHandle->end(); ++phicandsemulationIter) {
-	//std::cout << "phi can emu eta inside ntuplemaker : " << phicandsemulationIter->glbeta() << std::endl;
+	//std::cout << "phi can emu eta inside ntuplemaker : " << phicandsemulationIter->glbeta() << "\t phi : " << phicandsemulationIter->glbphi() << "\tpt : " << phicandsemulationIter->pt() << "\tmass : " << phicandsemulationIter->mass() << std::endl;
         m_trkphicandsemulation_phi->push_back(phicandsemulationIter->glbphi());
         m_trkphicandsemulation_eta->push_back(phicandsemulationIter->glbeta());
         m_trkphicandsemulation_pt->push_back(phicandsemulationIter->pt());
         m_trkphicandsemulation_mass->push_back(phicandsemulationIter->mass());
-	/////std::cout << "phi cand emulation mass inside ntuplemaker : " << phicandsemulationIter->mass() << std::endl;
       }
     }
     if (TrackPhiCandsEmulationHandle.isValid() && (Displaced == "Displaced" || Displaced == "Both")) {

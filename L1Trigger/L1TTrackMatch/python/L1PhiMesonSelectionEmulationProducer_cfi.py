@@ -1,8 +1,10 @@
 import FWCore.ParameterSet.Config as cms
+#from L1Trigger.VertexFinder.VertexProducer_cff import VertexProducer
 
 L1PhiMesonSelectionEmulationProducer = cms.EDProducer('L1PhiMesonSelectionEmulationProducer',
   l1PosKaonTracksInputTag = cms.InputTag("L1KaonTrackSelectionProducer","Level1TTKaonTracksSelectedEmulationPositivecharge"),
   l1NegKaonTracksInputTag = cms.InputTag("L1KaonTrackSelectionProducer","Level1TTKaonTracksSelectedEmulationNegativecharge"),
+#L1VertexInputTag = cms.InputTag("VertexProducer", VertexProducer.l1VertexCollectionName.value()),                                                      
   outputCollectionName = cms.string("Level1TTPhiMesonSelectedEmulation"),
   cutSet = cms.PSet(
                    dRmax = cms.double(0.12),
@@ -12,6 +14,7 @@ L1PhiMesonSelectionEmulationProducer = cms.EDProducer('L1PhiMesonSelectionEmulat
                    tkpairMmax = cms.double(1.03)
                    ),
   debug = cms.int32(0)
+  #useGTTinput  = cms.bool( False )
 )
 
 #L1PhiMesonSelectionProducerExtended = L1PhiMesonSelectionProducer.clone(

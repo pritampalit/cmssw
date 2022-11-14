@@ -1,5 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
+'''
 L1TrackNullSelectionProducer = cms.EDProducer('L1TrackSelectionProducer',
   l1TracksInputTag = cms.InputTag("L1GTTInputProducer","Level1TTTracksConverted"),
   outputCollectionName = cms.string("Level1TTTracksNullSelected"),
@@ -29,7 +30,7 @@ L1TrackNullSelectionProducerExtended = L1TrackNullSelectionProducer.clone(
   l1TracksInputTag = cms.InputTag("L1GTTInputProducerExtended" , "Level1TTTracksExtendedConverted"),
   outputCollectionName = "Level1TTTracksExtendedNullSelected",
 )
-
+'''
 L1TrackSelectionProducer = cms.EDProducer('L1TrackSelectionProducer',
   l1TracksInputTag = cms.InputTag("L1GTTInputProducer","Level1TTTracksConverted"),
   # If no vertex collection is provided, then the DeltaZ cuts will not be run
@@ -37,7 +38,8 @@ L1TrackSelectionProducer = cms.EDProducer('L1TrackSelectionProducer',
   l1VerticesEmulationInputTag = cms.InputTag("L1VertexFinderEmulator", "l1verticesEmulation"),
   outputCollectionName = cms.string("Level1TTTracksSelected"),
   cutSet = cms.PSet(
-                    ptMin = cms.double(2.0), # pt must be greater than this value, [GeV]
+                    #ptMin = cms.double(2.0), # pt must be greater than this value, [GeV]
+                    ptMin = cms.double(1.875), # pt must be greater than this value, [GeV]
                     absEtaMax = cms.double(2.4), # absolute value of eta must be less than this value
                     absZ0Max = cms.double(15.0), # z0 must be less than this value, [cm]
                     nStubsMin = cms.int32(4), # number of stubs must be greater than or equal to this value
@@ -55,7 +57,7 @@ L1TrackSelectionProducer = cms.EDProducer('L1TrackSelectionProducer',
   useDisplacedTracksDeltaZOverride = cms.double(-1.0), # override the deltaZ cut value for displaced tracks
   processSimulatedTracks = cms.bool(True), # return selected tracks after cutting on the floating point values
   processEmulatedTracks = cms.bool(True), # return selected tracks after cutting on the bitwise emulated values
-  debug = cms.int32(0) # Verbosity levels: 0, 1, 2, 3, 4
+                                          debug = cms.int32(4) # Verbosity levels: 0, 1, 2, 3, 4
 )
 
 L1TrackSelectionProducerExtended = L1TrackSelectionProducer.clone(

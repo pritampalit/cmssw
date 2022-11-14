@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
 // This class has been automatically generated on
 // Fri Jul 22 21:43:10 2022 by ROOT version 6.22/09
 // from TTree eventTree/Event tree
@@ -28,9 +28,13 @@ public :
    vector<float>   *trk_pt;
    vector<float>   *trk_eta;
    vector<float>   *trk_phi;
-   vector<float>   *trk_phi_local;
-   vector<float>   *trk_d0;
    vector<float>   *trk_z0;
+
+   vector<float>   *trk_pt_emu;
+   vector<float>   *trk_eta_emu;
+   vector<float>   *trk_phi_emu;
+   vector<float>   *trk_z0_emu;
+
    vector<float>   *trk_chi2;
    vector<float>   *trk_chi2dof;
    vector<float>   *trk_chi2rphi;
@@ -247,6 +251,11 @@ public :
    TBranch        *b_trk_pt;   //!
    TBranch        *b_trk_eta;   //!
    TBranch        *b_trk_phi;   //!
+
+   TBranch        *b_trk_pt_emu;   //!
+   TBranch        *b_trk_eta_emu;   //!
+   TBranch        *b_trk_phi_emu;   //!
+
    TBranch        *b_trk_phi_local;   //!
    TBranch        *b_trk_d0;   //!
    TBranch        *b_trk_z0;   //!
@@ -471,6 +480,9 @@ public :
    virtual void     Loop();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
+   
+   void FillDeltaR(std::vector<TLorentzVector> CandVec, TH1F* h);
+   double PhiRangeConv(double glbphi);
 };
 
 #endif
@@ -481,11 +493,11 @@ bstophiphi_phase2::bstophiphi_phase2(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("bstophiphiFromttbarinput_200evt.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/eos/user/g/gsaha4/Exotic/BstoPhiPhiNtuple/ttbaroutput.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("bstophiphiFromttbarinput_200evt.root");
+         f = new TFile("/eos/user/g/gsaha4/Exotic/BstoPhiPhiNtuple/ttbaroutput.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("bstophiphiFromttbarinput_200evt.root:/L1TrackNtuple");
+      TDirectory * dir = (TDirectory*)f->Get("/eos/user/g/gsaha4/Exotic/BstoPhiPhiNtuple/ttbaroutput.root:/L1TrackNtuple");
       dir->GetObject("eventTree",tree);
 
    }
@@ -531,8 +543,13 @@ void bstophiphi_phase2::Init(TTree *tree)
    trk_pt = 0;
    trk_eta = 0;
    trk_phi = 0;
-   trk_phi_local = 0;
-   trk_d0 = 0;
+
+   trk_pt_emu = 0;
+   trk_eta_emu = 0;
+   trk_phi_emu = 0;
+
+   //trk_phi_local = 0;
+   //trk_d0 = 0;
    trk_z0 = 0;
    trk_chi2 = 0;
    trk_chi2dof = 0;
@@ -739,8 +756,13 @@ void bstophiphi_phase2::Init(TTree *tree)
    fChain->SetBranchAddress("trk_pt", &trk_pt, &b_trk_pt);
    fChain->SetBranchAddress("trk_eta", &trk_eta, &b_trk_eta);
    fChain->SetBranchAddress("trk_phi", &trk_phi, &b_trk_phi);
-   fChain->SetBranchAddress("trk_phi_local", &trk_phi_local, &b_trk_phi_local);
-   fChain->SetBranchAddress("trk_d0", &trk_d0, &b_trk_d0);
+
+   fChain->SetBranchAddress("trk_pt_emu", &trk_pt_emu, &b_trk_pt_emu);
+   fChain->SetBranchAddress("trk_eta_emu", &trk_eta_emu, &b_trk_eta_emu);
+   fChain->SetBranchAddress("trk_phi_emu", &trk_phi_emu, &b_trk_phi_emu);
+
+   //fChain->SetBranchAddress("trk_phi_local", &trk_phi_local, &b_trk_phi_local);
+   //fChain->SetBranchAddress("trk_d0", &trk_d0, &b_trk_d0);
    fChain->SetBranchAddress("trk_z0", &trk_z0, &b_trk_z0);
    fChain->SetBranchAddress("trk_chi2", &trk_chi2, &b_trk_chi2);
    fChain->SetBranchAddress("trk_chi2dof", &trk_chi2dof, &b_trk_chi2dof);

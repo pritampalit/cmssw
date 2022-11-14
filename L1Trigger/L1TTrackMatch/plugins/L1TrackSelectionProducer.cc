@@ -488,6 +488,7 @@ void L1TrackSelectionProducer::printTrackInfo(edm::LogInfo& log, const L1Track& 
       << track.getStubRefs().size() << ", " << track.stubPtConsistency() << ", " << track.chi2ZRed() << ", "
       << track.chi2XYRed() << ", " << track.z0() << ")\n";
 
+  //  std::cout << "---Track info for simulation ended---" << std::endl;
   if (printEmulation) {
     ap_uint<TrackBitWidths::kPtSize> ptEmulationBits = track.getTrackWord()(
         TTTrack_TrackWord::TrackBitLocations::kRinvMSB - 1, TTTrack_TrackWord::TrackBitLocations::kRinvLSB);
@@ -500,6 +501,8 @@ void L1TrackSelectionProducer::printTrackInfo(edm::LogInfo& log, const L1Track& 
         << track.getNStubs() << ", " << track.getBendChi2() << ", " << track.getChi2RZ() << ", " << track.getChi2RPhi()
         << ", " << track.getZ0() << ")\n";
   }
+  //std::cout << "---Track info for emulation ended---" << std::endl;
+
 }
 
 // ------------ method called to produce the data  ------------

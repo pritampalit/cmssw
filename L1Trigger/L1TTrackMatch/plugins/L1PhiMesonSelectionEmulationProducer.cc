@@ -22,6 +22,7 @@
 //
 
 // system include files
+
 #include <algorithm>
 #include <memory>
 #include <string>
@@ -70,6 +71,10 @@
 #include "FWCore/Utilities/interface/StreamID.h"
 #include "Geometry/Records/interface/TrackerTopologyRcd.h"
 #include "DataFormats/Math/interface/LorentzVector.h"
+
+//#include "L1Trigger/L1TTrackMatch/interface/L1TkEtMissEmuAlgo.h"
+//#include "L1Trigger/L1TTrackMatch/interface/L1TkEtMissEmuTrackTransform.h"
+
 //#include "hls_math.h"
 //
 // class declaration
@@ -78,6 +83,47 @@
 using namespace std;
 using namespace edm;
 using namespace l1t;
+//using namespace l1tmetemu;
+
+namespace l1tphimesonemu {
+  const unsigned int kInternalPhiWidth{8};
+  const unsigned int kGlobalPhiExtra{4};
+  static constexpr double minPhi0{-0.7853981696};
+  typedef ap_uint<TTTrack_TrackWord::TrackBitWidths::kPhiSize> global_phi_t;
+  //typedef ap_uint<15> global_phislice_t;
+  const unsigned int kGlobalPhiBins = 1 << kInternalPhiWidth;
+  //  const unsigned int kGlobalPhiTotalBins = 1 << TTTrack_TrackWord::TrackBitWidths::kPhiSize;
+  //const unsigned int kGlobalPhiTotalBins = 1 << 12;
+  const double kStepPhi = (2 * -minPhi0) / kGlobalPhiBins;
+  const unsigned int kNSector{9};
+  const unsigned int kNQuadrants{4};
+  /*  double unpackSignedValue(unsigned int bits, unsigned int nBits){
+    int isign = 1;
+    unsigned int digitized_maximum = (1 << nBits) - 1;
+    if (bits & (1 << (nBits - 1))) {  // check the sign                                                                                                                  
+      isign = -1;
+      bits = (1 << (nBits + 1)) - bits;  // if negative, flip everything for two's complement encoding                                                                   
+    }
+    return (double(bits & digitized_maximum)) * isign;
+    }*/
+
+  double undigitizeSignedValue(unsigned int twosValue, unsigned int nBits) {
+    // Check that none of the bits above the nBits-1 bit, in a range of [0, nBits-1], are set.
+    // This makes sure that it isn't possible for the value represented by `twosValue` to be
+    //  any bigger than ((1 << nBits) - 1).
+    assert((twosValue >> nBits) == 0);
+
+    // Convert from twos compliment to C++ signed integer (normal digitized value)
+    int digitizedValue = twosValue;
+    if (twosValue & (1 << (nBits - 1))) {  // check if the twosValue is negative
+      digitizedValue -= (1 << nBits);
+    }
+
+    // Convert to floating point value
+    return (double(digitizedValue) + 0.5);
+  }
+
+}
 
 class L1PhiMesonSelectionEmulationProducer : public edm::global::EDProducer<> {
 public:
@@ -88,6 +134,25 @@ public:
   static constexpr double kmass = 0.493;
   double ETAPHI_LSB = M_PI / (1 << 12);
   double Z0_LSB = 0.05;
+  
+  l1tphimesonemu::global_phi_t localToGlobalPhi(const TTTrack_TrackWord::phi_t& local_phi, const l1tphimesonemu::global_phi_t& sector_shift) const;
+
+  //  std::vector<l1tphimesonemu::global_phi_t> const getPhiQuad() { return phiQuadrants; }
+  //std::vector<l1tphimesonemu::global_phi_t> const getPhiShift() { return phiShift; }
+  std::vector<l1tphimesonemu::global_phi_t> generatePhiSliceLUT (unsigned int N){
+    float sliceCentre = 0.0;
+    std::vector<l1tphimesonemu::global_phi_t> phiLUT;
+    for (unsigned int q = 0; q <= N; q++) {
+      phiLUT.push_back((l1tphimesonemu::global_phi_t)(sliceCentre / l1tphimesonemu::kStepPhi));
+      //    std::cout << "Number of iterations : " << q << "\tslice centre : " << sliceCentre << "\tkStepPhi : " << l1tphimesonemu::kStepPhi << "\tDivision : " << sliceCentre / l1tphimesonemu::kStepPhi << "\tglobal phi_t of division : " << (l1tphimesonemu::global_phi_t)(sliceCentre / l1tphimesonemu::kStepPhi) << "\tphi Lut : " << phiLUT.at(q) << std::endl;
+
+      sliceCentre += 2 * M_PI / N;
+
+
+    }
+
+    return phiLUT;
+  } ;
 
 
 private:
@@ -132,6 +197,9 @@ private:
   //bool processSimulatedTracks_, processEmulatedTracks_;
   int debug_;
 
+  std::vector<l1tphimesonemu::global_phi_t> phiQuadrants;
+  std::vector<l1tphimesonemu::global_phi_t>  phiShift;
+
 };
 
 //
@@ -150,6 +218,11 @@ L1PhiMesonSelectionEmulationProducer::L1PhiMesonSelectionEmulationProducer(const
   // Confirm the the configuration makes sense
   produces<l1t::TkLightMesonWordCollection>(outputCollectionName_);
   //produces<TkPhiCandidateRefVector>(outputCollectionName_);
+  //  void generateLUTs(){
+  phiQuadrants = L1PhiMesonSelectionEmulationProducer::generatePhiSliceLUT(l1tphimesonemu::kNQuadrants);
+  phiShift = L1PhiMesonSelectionEmulationProducer::generatePhiSliceLUT(l1tphimesonemu::kNSector);
+  //} ;
+
 }
 
 L1PhiMesonSelectionEmulationProducer::~L1PhiMesonSelectionEmulationProducer() {}
@@ -234,6 +307,57 @@ void L1PhiMesonSelectionEmulationProducer::printTrackInfo(edm::LogInfo& log, con
   }
 }
 */
+
+/*
+void L1PhiMesonSelectionEmulationProducer::generateLUTs() { 
+  phiQuadrants = L1PhiMesonSelectionEmulationProducer::generatePhiSliceLUT(l1tphimesonemu::kNQuadrants);
+  phiShift = L1PhiMesonSelectionEmulationProducer::generatePhiSliceLUT(l1tphimesonemu::kNSector);
+  }*/
+
+l1tphimesonemu::global_phi_t L1PhiMesonSelectionEmulationProducer::localToGlobalPhi(const TTTrack_TrackWord::phi_t& local_phi, const l1tphimesonemu::global_phi_t& sector_shift) const {
+  int PhiMin = 0;
+  int PhiMax = phiQuadrants.back();
+
+  //  std::cout << "PhiMax : " << PhiMax << std::endl;
+
+  int phiMultiplier = TTTrack_TrackWord::TrackBitWidths::kPhiSize - l1tphimesonemu::kInternalPhiWidth;
+
+  int tempPhi = floor(l1tphimesonemu::undigitizeSignedValue(local_phi, TTTrack_TrackWord::TrackBitWidths::kPhiSize) / pow(2, phiMultiplier)) + sector_shift;
+  //int tempPhi = floor(l1tphimesonemu::undigitizeSignedValue(local_phi, TTTrack_TrackWord::TrackBitWidths::kPhiSize)) + sector_shift;
+  
+  // std::cout << "local phi word before conversion : " << local_phi.to_string(2) << "\t local phi value uint :  << " << local_phi.to_uint() << std::endl;
+
+  //  int tempPhi = floor(l1tphimesonemu::undigitizeSignedValue(local_phi.to_uint(), TTTrack_TrackWord::TrackBitWidths::kPhiSize)) + sector_shift;
+
+  //std::cout << "undigitizesigned value : " << l1tphimesonemu::undigitizeSignedValue(local_phi.to_uint(), TTTrack_TrackWord::TrackBitWidths::kPhiSize) << "\tfloor : " << l1tphimesonemu::undigitizeSignedValue(local_phi.to_uint(), TTTrack_TrackWord::TrackBitWidths::kPhiSize) / pow(2, phiMultiplier) << std::endl;
+
+  //  std::cout << "tempPhi floor value : " << tempPhi << "\tsectorshift : " << sector_shift << "\ttemp phi word without phi min : " << l1tphimesonemu::global_phi_t(tempPhi).to_string(2) << std::endl;
+
+  if (tempPhi < PhiMin) {
+    tempPhi = tempPhi + PhiMax;
+  } else if (tempPhi > PhiMax) {
+    tempPhi = tempPhi - PhiMax;
+    }  // else                                                                                                                                                             
+  //  tempPhi = tempPhi;                                                                                                                                                 
+  //  std::cout << "tempPhi final value : " << tempPhi << std::endl;
+
+  l1tphimesonemu::global_phi_t globalPhi = l1tphimesonemu::global_phi_t(tempPhi);
+  
+  //  std::cout << "global phi : " << globalPhi << std::endl;
+
+  return globalPhi;
+}
+/*
+std::vector<l1tphimesonemu::global_phi_t> L1PhiMesonSelectionEmulationProducer::generatePhiSliceLUT(const unsigned int N) {
+  float sliceCentre = 0.0;
+  std::vector<l1tphimesonemu::global_phi_t> phiLUT;
+  for (unsigned int q = 0; q <= N; q++) {
+    phiLUT.push_back((l1tphimesonemu::global_phi_t)(sliceCentre / l1tphimesonemu::kStepPhi));
+    sliceCentre += 2 * M_PI / N;
+  }
+  return phiLUT;
+  }*/
+
 // ------------ method called to produce the data  ------------
 void L1PhiMesonSelectionEmulationProducer::produce(edm::StreamID, edm::Event& iEvent, const edm::EventSetup& iSetup) const {
 //void L1PhiMesonSelectionEmulationProducer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) const {
@@ -269,7 +393,9 @@ void L1PhiMesonSelectionEmulationProducer::produce(edm::StreamID, edm::Event& iE
     etaEmulationPos.V = etaEmulationBitsPos.range();
     double trketaPos = etaEmulationPos.to_double();
 
-    double trkphiPos = trackPosKaon.getPhi();
+    //    double trkphiLocalPos = trackPosKaon.getPhi();
+    l1tphimesonemu::global_phi_t trkphiEmuPos = L1PhiMesonSelectionEmulationProducer::localToGlobalPhi(trackPosKaon.getPhiWord(), phiShift[trackPosKaon.phiSector()]);
+    double trkphiPos = trkphiEmuPos*l1tphimesonemu::kStepPhi ;
 
     double trkz0Pos = trackPosKaon.getZ0();
 
@@ -278,6 +404,8 @@ void L1PhiMesonSelectionEmulationProducer::produce(edm::StreamID, edm::Event& iE
     double trkpzPos = trkptPos*sinh(trketaPos);
 
     //    std::cout << "nNegKaonOutputApproximate : " << nNegKaonOutputApproximate << std::endl;
+
+    //    std::cout << "poskaon pt : " << trkptPos << "\tlocalphi : " << trackPosKaon.getPhi() << "\tlocalphi word : " << trackPosKaon.getPhiWord().to_string(2) << "\t globalphi poskaon : " << trkphiEmuPos.to_uint() << "\t globalphi poskaon word : " << trkphiEmuPos.to_string(2) << "\tAlexx global phi : " << trkphiPos << std::endl;
     
     for (size_t j = 0; j < nNegKaonOutputApproximate; j++) {
       const auto& trackNegKaonRef = l1NegKaonTracksHandle->at(j);
@@ -293,73 +421,108 @@ void L1PhiMesonSelectionEmulationProducer::produce(edm::StreamID, edm::Event& iE
     etaEmulationNeg.V = etaEmulationBitsNeg.range();
     double trketaNeg = etaEmulationNeg.to_double();
 
-    double trkphiNeg = trackNegKaon.getPhi();
+    //double trkphiLocalNeg = trackNegKaon.getPhi();
+    l1tphimesonemu::global_phi_t trkphiEmuNeg = L1PhiMesonSelectionEmulationProducer::localToGlobalPhi(trackNegKaon.getPhiWord(), phiShift[trackNegKaon.phiSector()]);
+    double trkphiNeg = trkphiEmuNeg*l1tphimesonemu::kStepPhi;
+
+    //std::cout << "global pt neg : " << trkptNeg << "global phi neg : " << trkphiNeg << std::endl;
 
     double trkz0Neg = trackNegKaon.getZ0();
 
     double trkpxNeg = trkptNeg*cos(trkphiNeg);
     double trkpyNeg = trkptNeg*sin(trkphiNeg);
     double trkpzNeg = trkptNeg*sinh(trketaNeg);
+
+    double convdPhi = trkphiPos - trkphiNeg;
+
+    if (convdPhi < 0 ) convdPhi = convdPhi + 2*M_PI;
+    else if (convdPhi > 2*M_PI) convdPhi = convdPhi - 2*M_PI;
       
-    double trkdrpairPhi = sqrt(pow((trkphiPos - trkphiNeg),2) + pow((trketaPos - trketaNeg),2));
+    double trkdrpairPhi = sqrt(pow(convdPhi,2) + pow((trketaPos - trketaNeg),2));
       // write mass calculation here , for hardware specially
 
     /*    std::cout << "Phi Emu trkptPos : " << trkptPos << "\t trkptNeg : " << trkptNeg << "\t trketaPos : " << trketaPos << "\t trketaNeg : " << trketaNeg << "\t trkPhiPos : " << trkphiPos << "\t trkPhiNeg : " << trkphiNeg << std::endl;
-
     std::cout << "Phi Emu Pos Kaon track cos(trkphiPos) : " << cos(trkphiPos) << "\tsin(trkphiPos) : " << sin(trkphiPos) << "\tsinh(trketaPos) : " << sinh(trketaPos) << "\tcosh(trketaPos)" << std::endl;
+    std::cout << "Phi Emu Neg Kaon track cos(trkphiNeg) : " << cos(trkphiNeg) << "\tsin(trkphiNeg) : " << sin(trkphiNeg) << "\tsinh(trketaNeg) : " << sinh(trketaNeg) << "\tcosh(trketaPos)" << std::endl;
 
     std::cout << "Phi Emu Pos Kaon track px : " << trkpxPos << "\tpy : " << trkpyPos << "\tpz : " << trkpzPos << std::endl;
+    std::cout << "Phi Emu Neg Kaon track px : " << trkpxNeg << "\tpy : " << trkpyNeg << "\tpz : " << trkpzNeg << std::endl;
 
-    std::cout << "Phi Emu cosh in mass : " << cosh(trketaPos - trketaNeg) << "\t cos in mass : " << cos(trkphiPos - trkphiNeg) << std::endl;*/
+    std::cout << "Phi Emu cosh in mass : " << cosh(trketaPos - trketaNeg) << "\t cos in mass : " << cos(trkphiPos - trkphiNeg) << std::endl;
+    std::cout << "Phi Emu diff in dR for eta : " << (trketaPos - trketaNeg) << "\t for phi : " << (trkphiPos - trkphiNeg) << std::endl;
+    std::cout << "Phi Emu diff square in dR for eta : " << pow((trketaPos - trketaNeg),2) << "\t for phi : " << pow((trkphiPos - trkphiNeg),2) << std::endl;*/
 
-      double trkmasspairPhi = sqrt(2*trkptPos*trkptNeg*(cosh(trketaPos - trketaNeg)-cos(trkphiPos - trkphiNeg)));
-
-      ////      std::cout << "trkmass pair phi beforfe mass cut : " << trkmasspairPhi << std::endl;
+    double trkmasspairPhi = sqrt(2*trkptPos*trkptNeg*(cosh(trketaPos - trketaNeg)-cos(trkphiPos - trkphiNeg)));
+    
+    if (i == 0 && j == 2) {
+      //std::cout << "Emu pos tk pt : " << trkptPos << "\t postk eta : " << trketaPos << "\t postk phi : " << trkphiPos << std::endl;
+      //std::cout << "Emu neg tk pt : " << trkptNeg << "\t negtk eta : " << trketaNeg << "\t negtk phi : " << trkphiNeg << std::endl;
+      std::cout << "Phi Emu trkptPos : " << trkptPos << "\t trkptNeg : " << trkptNeg << "\t trketaPos : " << trketaPos << "\t trketaNeg : " << trketaNeg << "\t trkPhiPos : " << trkphiPos << "\t trkPhiNeg : " << trkphiNeg << std::endl;
+      std::cout << "Phi Emu Pos Kaon track cos(trkphiPos) : " << cos(trkphiPos) << "\tsin(trkphiPos) : " << sin(trkphiPos) << "\tsinh(trketaPos) : " << sinh(trketaPos) << "\tcosh(trketaPos)" << std::endl;
+      std::cout << "Phi Emu Neg Kaon track cos(trkphiNeg) : " << cos(trkphiNeg) << "\tsin(trkphiNeg) : " << sin(trkphiNeg) << "\tsinh(trketaNeg) : " << sinh(trketaNeg) << "\tcosh(trketaPos)" << std::endl;
       
-      //std::cout << "trkdr pair phi beforfe mass cut : " << trkdrpairPhi << std::endl;
-      if (trkdrpairPhi > dRmax_) continue; 
-      if (trkmasspairPhi < tkpairMmin_ || trkmasspairPhi > tkpairMmax_) continue; // do it before
-
-      double trkpxPhi = trkpxNeg + trkpxPos;
-      double trkpyPhi = trkpyNeg + trkpyPos;
-      double trkpzPhi = trkpzNeg + trkpzPos;
+      std::cout << "Phi Emu Pos Kaon track px : " << trkpxPos << "\tpy : " << trkpyPos << "\tpz : " << trkpzPos << std::endl;
+      std::cout << "Phi Emu Neg Kaon track px : " << trkpxNeg << "\tpy : " << trkpyNeg << "\tpz : " << trkpzNeg << std::endl;
       
-      //std::cout << "phi emul pt in double format : " << sqrt(pow(trkpxPhi,2) + pow(trkpyPhi,2)) << std::endl;
-      // std::cout << "phi emul eta in double format : " << asinh(trkpzPhi/sqrt(pow(trkpxPhi,2) + pow(trkpyPhi,2))) << std::endl;
+      std::cout << "Phi Emu cosh in mass : " << cosh(trketaPos - trketaNeg) << "\t cos in mass : " << cos(trkphiPos - trkphiNeg) << std::endl;
+      std::cout << "Phi Emu diff in dR for eta : " << (trketaPos - trketaNeg) << "\t for phi : " << (trkphiPos - trkphiNeg) << std::endl;
+      std::cout << "Phi Emu diff square in dR for eta : " << pow((trketaPos - trketaNeg),2) << "\t for phi : " << pow((trkphiPos - trkphiNeg),2) << std::endl;
+      std::cout << "Emu Masspair phi : " << trkmasspairPhi << "\ttrk dr pair : " << trkdrpairPhi << std::endl;
+    }
 
-      ////std::cout << "trk phi emulation mass inside analyzer (original and emulation ) double format: " << sqrt(2*trkptPos*trkptNeg*(cosh(trketaPos - trketaNeg)-cos(trkphiPos - trkphiNeg)))  <<  std::endl;
+
+    //std::cout << "trkmass pair phi beforfe mass cut : " << trkmasspairPhi << std::endl;
+    
+    //std::cout << "trkdr pair phi beforfe mass cut : " << trkdrpairPhi << std::endl;
+    if (trkdrpairPhi > dRmax_) continue; 
+    if (trkmasspairPhi < tkpairMmin_ || trkmasspairPhi > tkpairMmax_) continue; // do it before
+    
+    double trkpxPhi = trkpxNeg + trkpxPos;
+    double trkpyPhi = trkpyNeg + trkpyPos;
+    double trkpzPhi = trkpzNeg + trkpzPos;
+
+
+    /* std::cout << "phi emul pt in double format : " << sqrt(pow(trkpxPhi,2) + pow(trkpyPhi,2)) << std::endl;
+    std::cout << "phi emul eta in double format : " << asinh(trkpzPhi/sqrt(pow(trkpxPhi,2) + pow(trkpyPhi,2))) << std::endl;
+
+    std::cout << "trk phi emulation mass inside analyzer (original and emulation ) double format: " << sqrt(2*trkptPos*trkptNeg*(cosh(trketaPos - trketaNeg)-cos(trkphiPos - trkphiNeg)))  <<  std::endl;*/
 
       l1t::TkLightMesonWord::valid_t trkvalidPhi =   trackPosKaon.getValid() && trackNegKaon.getValid();
       l1t::TkLightMesonWord::pt_t trkptPhi = sqrt(pow(trkpxPhi,2) + pow(trkpyPhi,2)); // use Pow()
-      l1t::TkLightMesonWord::glbphi_t trkphiPhi = atan(trkpyPhi/trkpxPhi) / ETAPHI_LSB;
+      l1t::TkLightMesonWord::glbphi_t trkphiPhi = atan2(trkpyPhi,trkpxPhi) / ETAPHI_LSB;
+      //l1t::TkLightMesonWord::glbphi_t trkphiPhi = asin(trkpyPhi/sqrt(pow(trkpxPhi,2) + pow(trkpyPhi,2))) / ETAPHI_LSB;
       l1t::TkLightMesonWord::glbeta_t trketaPhi = asinh(trkpzPhi/sqrt(pow(trkpxPhi,2) + pow(trkpyPhi,2))) / ETAPHI_LSB;
-      l1t::TkLightMesonWord::z0_t trkz0Phi = (trkz0Pos + trkz0Neg) / Z0_LSB;
+      l1t::TkLightMesonWord::z0_t trkz0Phi = ((trkz0Pos + trkz0Neg) / Z0_LSB)* 0.5;
       l1t::TkLightMesonWord::mass_t trkmassPhi = sqrt(2*trkptPos*trkptNeg*(cosh(trketaPos - trketaNeg)-cos(trkphiPos - trkphiNeg)));
       l1t::TkLightMesonWord::type_t trktypePhi = l1t::TkLightMesonWord::TkLightMesonTypes::kPhiType;
       l1t::TkLightMesonWord::ntracks_t trkntracksPhi = 2;
       l1t::TkLightMesonWord::unassigned_t trkunassignedPhi = 0;
 
-      //std::cout << "phi emul pt just before booking trkphiWord (original and emulation ): : " << trkptPhi.to_double() << std::endl;
-      //std::cout << "phi emul eta just before booking trkphiWord (original and emulation ): : " << trketaPhi.to_double() << std::endl;
-
+      /*      std::cout << "phi emul pt just before booking trkphiWord (original and emulation ): : " << trkptPhi.to_double() << std::endl;
+      std::cout << "phi emul eta just before booking trkphiWord (original and emulation ): : " << trketaPhi.to_double() << std::endl;
+      std::cout << "phi emul phi just before booking trkphiWord (original and emulation ): : " << trkphiPhi.to_double() << std::endl;
       
-      //std::cout << "trkPhiword before" << std::endl;
+      std::cout << "trkPhiword before" << std::endl;
 
-      //      std::cout << __PRETTY_FUNCTION__ << __LINE__ << std::endl;
+      //std::cout << __PRETTY_FUNCTION__ << __LINE__ << std::endl;
 
-      ////std::cout << "trk phi emulation mass inside analyzer (original and emulation ) before phi booking: " << trkmassPhi  <<  std::endl;
+      std::cout << "trk phi emulation mass inside analyzer (original and emulation ) before phi booking: " << trkmassPhi  <<  std::endl;*/
 
       l1t::TkLightMesonWord trkPhiWord(trkvalidPhi, trkptPhi, trkphiPhi, trketaPhi, trkz0Phi, trkmassPhi, trktypePhi, trkntracksPhi, trkunassignedPhi);
       
-      //std::cout << "trkPhiword after" << std::endl;
-      //std::cout << "trk phi emulation eta inside analyzer (original and emulation ): " << trkPhiWord.glbeta()  <<  std::endl;
-      ////std::cout << "trk phi emulation mass inside analyzer (original and emulation ): " << trkPhiWord.mass()  <<  std::endl;
+      /*      std::cout << "trkPhiword after" << std::endl;
+      std::cout << "trk phi emulation pt inside analyzer (original and emulation ): " << trkPhiWord.pt()  <<  std::endl;
+      std::cout << "trk phi emulation eta inside analyzer (original and emulation ): " << trkPhiWord.glbeta()  <<  std::endl;
+      std::cout << "trk phi emulation phi inside analyzer (original and emulation ): " << trkPhiWord.glbphi()  <<  std::endl;
+      std::cout << "trk phi emulation mass inside analyzer (original and emulation ): " << trkPhiWord.mass()  <<  std::endl;*/
 
       L1PhiMesonEmulationOutput->push_back(trkPhiWord);
 
       
     }
   }
+
+  std::cout << "# Phi meson emu : " << L1PhiMesonEmulationOutput->size() << std::endl;
 
   //for (size_t iphi = 0; iphi < L1PhiMesonOutput->size(); iphi++) {
     //std::cout << "tkphi M : " << L1PhiMesonOutput->at(iphi).p4().M() << std::endl;
@@ -415,6 +578,9 @@ void L1PhiMesonSelectionEmulationProducer::fillDescriptions(edm::ConfigurationDe
   desc.add<int>("debug", 0)->setComment("Verbosity levels: 0, 1, 2, 3");
   descriptions.addWithDefaultLabel(desc);
 }
+
+
+
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(L1PhiMesonSelectionEmulationProducer);

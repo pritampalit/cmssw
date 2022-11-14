@@ -261,14 +261,11 @@ void L1BsMesonSelectionProducer::produce(edm::StreamID, edm::Event& iEvent, cons
 
     math::XYZTLorentzVector Phi2P4(l1Phi2px, l1Phi2py, l1Phi2pz, l1Phi2e);
 
-    
-
     TkBsCandidate tkBs(Phi1P4 + Phi2P4, trackPhiCands1, trackPhiCands2);
     
-    if (tkBs.dxyPhiPair() > dxymax_) continue;
-    if (std::fabs(tkBs.dzPhiPair()) > dzmax_) continue;
-    if (tkBs.dRPhiPair() > dRmax_) continue;
-    if (tkBs.dRPhiPair() < dRmin_) continue;
+    //if (tkBs.dxyPhiPair() > dxymax_) continue;
+    //if (std::fabs(tkBs.dzPhiPair()) > dzmax_) continue;
+    if (tkBs.dRPhiPair() > dRmax_ || tkBs.dRPhiPair() < dRmin_) continue;
     //std::cout << "phi mass : " << tkBs.p4().M() << std::endl;
     if (tkBs.p4().M() < phipairMmin_ || tkBs.p4().M() > phipairMmax_) continue;
 

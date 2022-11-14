@@ -268,7 +268,7 @@ void L1KaonTrackSelectionProducer::produce(edm::StreamID, edm::Event& iEvent, co
   }
 
 
-  if (debug_ >= 2) {
+  /*  if (debug_ >= 2) {
     printDebugInfo(l1TracksHandle,
                    vTTPosTrackOutput,
                    vTTPosTrackEmulationOutput);
@@ -276,7 +276,7 @@ void L1KaonTrackSelectionProducer::produce(edm::StreamID, edm::Event& iEvent, co
     printDebugInfo(l1TracksHandle,
                    vTTNegTrackOutput,
                    vTTNegTrackEmulationOutput);
-  }
+		   }*/
 
   // Put the outputs into the event
   if (processSimulatedTracks_) {

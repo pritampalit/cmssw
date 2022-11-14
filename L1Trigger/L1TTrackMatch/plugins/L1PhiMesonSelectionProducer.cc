@@ -222,20 +222,20 @@ void L1PhiMesonSelectionProducer::produce(edm::StreamID, edm::Event& iEvent, con
 
   TTTrackCollectionHandle l1PosKaonTracksHandle;
   TTTrackCollectionHandle l1NegKaonTracksHandle;
-
+  
   iEvent.getByToken(l1PosKaonTracksToken_, l1PosKaonTracksHandle);
   iEvent.getByToken(l1NegKaonTracksToken_, l1NegKaonTracksHandle);
   size_t nPosKaonOutputApproximate = l1PosKaonTracksHandle->size();
   size_t nNegKaonOutputApproximate = l1NegKaonTracksHandle->size();
   size_t nPhiMesonOutputApproximate = nPosKaonOutputApproximate + nNegKaonOutputApproximate;
-
+  
   L1PhiMesonOutput->reserve(nPhiMesonOutputApproximate);
   //L1PhiMesonOutputRefVec->reserve(nPhiMesonOutputApproximate);
   
   for (size_t i = 0; i < nPosKaonOutputApproximate; i++) {
     const auto& trackPosKaonRef = l1PosKaonTracksHandle->at(i);
     const auto& trackPosKaon = *trackPosKaonRef;
-
+    
     const edm::Ptr<L1Track>& trackPosKaonReftoPtr = edm::refToPtr(trackPosKaonRef);
     float l1postkpt = trackPosKaon.momentum().perp();
     float l1postketa = trackPosKaon.momentum().eta();
@@ -244,55 +244,87 @@ void L1PhiMesonSelectionProducer::produce(edm::StreamID, edm::Event& iEvent, con
     float l1postkpy = l1postkpt*sin(l1postkphi);
     float l1postkpz = l1postkpt*sinh(l1postketa);
     float l1postke = l1postkpt*cosh(l1postketa);
- 
+    
     math::XYZTLorentzVector PosKaonP4(l1postkpx, l1postkpy, l1postkpz, l1postke);
-
+    
     for (size_t j = 0; j < nNegKaonOutputApproximate; j++) {
-    const auto& trackNegKaonRef = l1NegKaonTracksHandle->at(j);
-    const auto& trackNegKaon = *trackNegKaonRef;
-   
-    const edm::Ptr<L1Track>& trackNegKaonReftoPtr = edm::refToPtr(trackNegKaonRef);
-
-    float l1negtkpt = trackNegKaon.momentum().perp();
-    float l1negtketa = trackNegKaon.momentum().eta();
-    float l1negtkphi = trackNegKaon.momentum().phi();
-    float l1negtkpx = l1negtkpt*cos(l1negtkphi);
-    float l1negtkpy = l1negtkpt*sin(l1negtkphi);
-    float l1negtkpz = l1negtkpt*sinh(l1negtketa);
-    float l1negtke = l1negtkpt*cosh(l1negtketa);
-    
-    /*    std::cout << "Phi Sim trkptPos : " << l1postkpt << "\t trkptNeg : " << l1negtkpt << "\t trketaPos : " << l1postketa << "\t trketaNeg : " << l1negtketa << "\t trkPhiPos : " << l1postkphi << "\t trkPhiNeg : " << l1negtkphi << std::endl;
-
-    std::cout << "Phi Sim Pos Kaon track cos(l1postkphi) : " << cos(l1postkphi) << "\tsin(l1postkphi) : " << sin(l1postkphi) << "\tsinh(l1postketa) : " << sinh(l1postketa) << "\tcosh(l1postketa)" << cosh(l1postketa) << std::endl;
-
-    std::cout << "Phi Sim Pos kaon track px : " << l1postkpx << "\t py : " << l1postkpy << "\t pz : " << l1postkpz <<std::endl;
-    
-    std::cout << "Phi Sim cosh in mass : " << cosh(l1postketa - l1negtketa) << "\t cos in mass : " << cos(l1postkphi - l1negtkphi) << std::endl;*/
-
-    double trkmasspairPhiasinEmu = sqrt(2*l1postkpt*l1negtkpt*(cosh(l1postketa - l1negtketa)-cos(l1postkphi - l1negtkphi)));
-
-    ////    std::cout << "trkmass pair phi beforfe mass cut as in Emu: " << trkmasspairPhiasinEmu << std::endl;
-
-    math::XYZTLorentzVector NegKaonP4(l1negtkpx, l1negtkpy, l1negtkpz, l1negtke);
-
-    math::XYZTLorentzVector  PhiP4 = PosKaonP4 + NegKaonP4;
-
-    TkPhiCandidate tkphi(PhiP4, trackPosKaonReftoPtr, trackNegKaonReftoPtr);
-    
-    ////std::cout << "phi cand mass inside analyzer before mass cut from lorentvector: " << tkphi.p4().M() << std::endl;
-    //    if (tkphi.dxyTrkPair() > dxymax_) continue;
-    //if (std::fabs(tkphi.dzTrkPair()) > dzmax_) continue;
-    if (tkphi.dRTrkPair() > dRmax_) continue;
-    //## std::cout << "phi mass : " << tkphi.p4().M() << std::endl;
-    if (tkphi.p4().M() < tkpairMmin_ || tkphi.p4().M() > tkpairMmax_) continue;
-
-    //    std::cout << "phi cand eta inside analyzer : " << tkphi.eta() << std::endl;
-    ////std::cout << "phi cand mass inside analyzer : " << tkphi.p4().M() << std::endl;
-
-    L1PhiMesonOutput->push_back(tkphi);
-
+      const auto& trackNegKaonRef = l1NegKaonTracksHandle->at(j);
+      const auto& trackNegKaon = *trackNegKaonRef;
+      
+      const edm::Ptr<L1Track>& trackNegKaonReftoPtr = edm::refToPtr(trackNegKaonRef);
+      
+      float l1negtkpt = trackNegKaon.momentum().perp();
+      float l1negtketa = trackNegKaon.momentum().eta();
+      float l1negtkphi = trackNegKaon.momentum().phi();
+      float l1negtkpx = l1negtkpt*cos(l1negtkphi);
+      float l1negtkpy = l1negtkpt*sin(l1negtkphi);
+      float l1negtkpz = l1negtkpt*sinh(l1negtketa);
+      float l1negtke = l1negtkpt*cosh(l1negtketa);
+      /*    
+	    std::cout << "Phi Sim trkptPos : " << l1postkpt << "\t trkptNeg : " << l1negtkpt << "\t trketaPos : " << l1postketa << "\t trketaNeg : " << l1negtketa << "\t trkPhiPos : " << l1postkphi << "\t trkPhiNeg : " << l1negtkphi << std::endl;
+	    
+	    std::cout << "Phi Sim Pos Kaon track cos(l1postkphi) : " << cos(l1postkphi) << "\tsin(l1postkphi) : " << sin(l1postkphi) << "\tsinh(l1postketa) : " << sinh(l1postketa) << "\tcosh(l1postketa)" << cosh(l1postketa) << std::endl;
+	    
+	    std::cout << "Phi Sim Neg Kaon track cos(l1postkphi) : " << cos(l1negtkphi) << "\tsin(l1negtkphi) : " << sin(l1negtkphi) << "\tsinh(l1negtketa) : " << sinh(l1negtketa) << "\tcosh(l1negtketa)" << cosh(l1negtketa) << std::endl;
+	    
+	    std::cout << "Phi Sim Pos kaon track px : " << l1postkpx << "\t py : " << l1postkpy << "\t pz : " << l1postkpz <<std::endl;
+	    std::cout << "Phi Sim Neg kaon track px : " << l1negtkpx << "\t py : " << l1negtkpy << "\t pz : " << l1negtkpz <<std::endl;
+	    
+	    std::cout << "Phi Sim cosh in mass : " << cosh(l1postketa - l1negtketa) << "\t cos in mass : " << cos(l1postkphi - l1negtkphi) << std::endl;
+	    std::cout << "Phi Sim diff in dR for eta : " << (l1postketa - l1negtketa) << "\t for phi : " << (l1postkphi - l1negtkphi) << std::endl;
+	    std::cout << "Phi Sim diff square in dR for eta : " << pow((l1postketa - l1negtketa),2) << "\t for phi : " << pow((l1postkphi - l1negtkphi),2) << std::endl;*/
+      
+      double trkmasspairPhiasinEmu = sqrt(2*l1postkpt*l1negtkpt*(cosh(l1postketa - l1negtketa)-cos(l1postkphi - l1negtkphi)));
+      
+      //std::cout << "trkmass pair phi beforfe mass cut as in Emu: " << trkmasspairPhiasinEmu << std::endl;
+      
+      math::XYZTLorentzVector NegKaonP4(l1negtkpx, l1negtkpy, l1negtkpz, l1negtke);
+      
+      math::XYZTLorentzVector  PhiP4 = PosKaonP4 + NegKaonP4;
+      
+      TkPhiCandidate tkphi(PhiP4, trackPosKaonReftoPtr, trackNegKaonReftoPtr);
+      
+      if (tkphi.dRTrkPair() < dRmax_ && (tkphi.p4().M() > tkpairMmin_ && tkphi.p4().M() < tkpairMmax_)) {	
+	std::cout << "Phi Sim trkptPos : " << l1postkpt << "\t trkptNeg : " << l1negtkpt << "\t trketaPos : " << l1postketa << "\t trketaNeg : " << l1negtketa << "\t trkPhiPos : " << l1postkphi << "\t trkPhiNeg : " << l1negtkphi << std::endl;
+	
+	std::cout << "Phi Sim Pos Kaon track cos(l1postkphi) : " << cos(l1postkphi) << "\tsin(l1postkphi) : " << sin(l1postkphi) << "\tsinh(l1postketa) : " << sinh(l1postketa) << "\tcosh(l1postketa)" << cosh(l1postketa) << std::endl;
+	
+	std::cout << "Phi Sim Neg Kaon track cos(l1postkphi) : " << cos(l1negtkphi) << "\tsin(l1negtkphi) : " << sin(l1negtkphi) << "\tsinh(l1negtketa) : " << sinh(l1negtketa) << "\tcosh(l1negtketa)" << cosh(l1negtketa) << std::endl;
+	
+	std::cout << "Phi Sim Pos kaon track px : " << l1postkpx << "\t py : " << l1postkpy << "\t pz : " << l1postkpz <<std::endl;
+	std::cout << "Phi Sim Neg kaon track px : " << l1negtkpx << "\t py : " << l1negtkpy << "\t pz : " << l1negtkpz <<std::endl;
+	
+	std::cout << "Phi Sim cosh in mass : " << cosh(l1postketa - l1negtketa) << "\t cos in mass : " << cos(l1postkphi - l1negtkphi) << std::endl;
+	std::cout << "Phi Sim diff in dR for eta : " << (l1postketa - l1negtketa) << "\t for phi : " << (l1postkphi - l1negtkphi) << std::endl;
+	std::cout << "Phi Sim diff square in dR for eta : " << pow((l1postketa - l1negtketa),2) << "\t for phi : " << pow((l1postkphi - l1negtkphi),2) << std::endl;
+	std::cout << "trkmass pair phi beforfe mass cut as in Emu: " << trkmasspairPhiasinEmu << std::endl;
+	std::cout << "pos tk index : " << i << "\tnegtk pt : " << PosKaonP4.Pt() << "\tpostk eta : " << PosKaonP4.Eta() << "\tpostk phi : " << PosKaonP4.Phi() << std::endl;
+	std::cout << "neg tk index : " << j << "\tnegtk pt : " << NegKaonP4.Pt() << "\tnegtk eta : " << NegKaonP4.Eta() << "\tnegtk phi : " << NegKaonP4.Phi() << std::endl;
+	std::cout << "phi cand mass inside analyzer before mass cut from lorentvector: " << tkphi.p4().M() << std::endl;
+	std::cout << "phi cand dR inside analyzer before dR cut from lorentvector: " << tkphi.dRTrkPair() << std::endl;}
+      //    if (tkphi.dxyTrkPair() > dxymax_) continue;
+      //if (std::fabs(tkphi.dzTrkPair()) > dzmax_) continue;
+      if (tkphi.dRTrkPair() > dRmax_) continue;
+      //std::cout << "phi mass : " << tkphi.p4().M() << std::endl;
+      if (tkphi.p4().M() < tkpairMmin_ || tkphi.p4().M() > tkpairMmax_) continue;
+      
+      //std::cout << "### : tk pair dR : " << tkphi.dRTrkPair() << "\t tk pair M : " << tkphi.p4().M() << std::endl;
+      
+      //std::cout << "phi can phi inside analyzer as Emu formula tan :" << atan((l1negtkpy + l1postkpy)/(l1negtkpx + l1postkpx)) << std::endl;
+      //    std::cout << "phi can phi inside analyzer as Emu formula tan2 :" << atan2((l1negtkpy + l1postkpy),(l1negtkpx + l1postkpx)) << std::endl;
+      //std::cout << "phi can phi inside analyzer as Emu formula sin:" << asin((l1negtkpy + l1postkpy)/tkphi.pt()) << std::endl;
+      //std::cout << "phi can phi inside analyzer as Emu formula cos:" << acos((l1negtkpx + l1postkpx)/tkphi.pt()) << std::endl;
+      //std::cout << "phi cand pt inside analyzer : " << tkphi.pt() << std::endl;
+      //std::cout << "phi cand eta inside analyzer : " << tkphi.eta() << std::endl;
+      //std::cout << "phi cand phi inside analyzer : " << tkphi.phi() << std::endl;
+      //std::cout << "phi cand mass inside analyzer : " << tkphi.p4().M() << std::endl;
+      
+      L1PhiMesonOutput->push_back(tkphi);
+      
     }
   }
+
+  std::cout << "# Phi meson sim : " << L1PhiMesonOutput->size() << std::endl;
 
   //for (size_t iphi = 0; iphi < L1PhiMesonOutput->size(); iphi++) {
     //std::cout << "tkphi M : " << L1PhiMesonOutput->at(iphi).p4().M() << std::endl;
