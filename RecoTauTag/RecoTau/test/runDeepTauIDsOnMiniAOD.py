@@ -24,7 +24,7 @@ else:
     process.TritonService.fallback.enable = False
     #process.TritonService.modelRepositoryPath = cms.untracked.string("/afs/cern.ch/work/p/ppalit2/public/test_sonic/onnx_models/RecoTauTag-TrainingFiles/DeepTauIdSONIC/")
     #process.TritonService.servers = cms.untracked.vstring("localhost:8001")
-    process.options.numberOfStreams = 4
+    process.options.numberOfStreams = 1
     process.TritonService.servers = cms.untracked.VPSet(
         PSet(
             name = cms.untracked.string("lxplus_local_gpu"),

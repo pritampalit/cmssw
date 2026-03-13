@@ -797,8 +797,8 @@ class TauIDEmbedder(object):
             #deepTauSonicTriton.toModify(_deepTauProducer.Client, modelRepository = cms.string("/afs/cern.ch/work/p/ppalit2/public/test_sonic/onnx_models/RecoTauTag-TrainingFiles/DeepTauIdSONIC/"))
             deepTauSonicTriton.toReplaceWith(_deepTauProducer, DeepTauIdSonicProducer.clone(
                 Client = cms.PSet(
-                    #mode = cms.string('PseudoAsync'),
-                    mode = cms.string('Async'),
+                    mode = cms.string('PseudoAsync'),
+                    #mode = cms.string('Async'),
                     allowedTries = cms.untracked.uint32(0),
                     verbose = cms.untracked.bool(True),
                     modelName = cms.string("deeptau_2017v2p1"),
@@ -852,8 +852,8 @@ class TauIDEmbedder(object):
             #deepTauSonicTriton.toModify(_deepTauProducer.Client, modelRepository = cms.string("/afs/cern.ch/work/p/ppalit2/public/test_sonic/onnx_models/RecoTauTag-TrainingFiles/DeepTauIdSONIC/"))
             deepTauSonicTriton.toReplaceWith(_deepTauProducer, DeepTauIdSonicProducer.clone(
                 Client = cms.PSet(
-                    #mode = cms.string('PseudoAsync'),
-                    mode = cms.string('Async'),
+                    mode = cms.string('PseudoAsync'),
+                    #mode = cms.string('Async'),
                     allowedTries = cms.untracked.uint32(0),
                     verbose = cms.untracked.bool(True),
                     modelName = cms.string("deeptau_2017v2p1"),
@@ -909,8 +909,8 @@ class TauIDEmbedder(object):
             #deepTauSonicTriton.toModify(_deepTauProducer.Client, modelRepository = cms.string("/afs/cern.ch/work/p/ppalit2/public/test_sonic/onnx_models/RecoTauTag-TrainingFiles/DeepTauIdSONIC/"))
             deepTauSonicTriton.toReplaceWith(_deepTauProducer, DeepTauIdSonicProducer.clone(
                 Client = cms.PSet(
-                    #mode = cms.string('PseudoAsync'),
-                    mode = cms.string('Async'),
+                    mode = cms.string('PseudoAsync'),
+                    #mode = cms.string('Async'),
                     allowedTries = cms.untracked.uint32(0),
                     verbose = cms.untracked.bool(True),
                     modelName = cms.string("deeptau_2018v2p5"),
