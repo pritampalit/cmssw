@@ -1,0 +1,198 @@
+%MSG-w TritonDiscovery:  (NoModuleName) 05-Mar-2026 07:57:20 CET pre-events
+No server information from SITECONF
+%MSG
+05-Mar-2026 07:57:21 CET  Initiating request to open file root://eoscms.cern.ch//eos/cms/store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/006455CD-9CDB-B843-B50D-5721C39F30CE.root
+%MSG-w XrdAdaptorInternal:  file_open 05-Mar-2026 07:57:22 CET pre-events
+Failed to open file at URL root://eoscms.cern.ch:1094//eos/cms/store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/006455CD-9CDB-B843-B50D-5721C39F30CE.root?xrdcl.requuid=65b32711-f60a-4476-987b-0d7c143588c4.
+%MSG
+%MSG-w XrdAdaptorInternal:  file_open 05-Mar-2026 07:57:22 CET pre-events
+Failed to open file at URL root://eoscms.cern.ch:1094//eos/cms/store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/006455CD-9CDB-B843-B50D-5721C39F30CE.root?xrdcl.requuid=f7253ba8-357d-47f3-a288-a3023a7e3d71.
+%MSG
+05-Mar-2026 07:57:22 CET  Initiating request to open file root://xrootd-cms.infn.it//store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/006455CD-9CDB-B843-B50D-5721C39F30CE.root
+%MSG-f XrdAdaptor:  file_open 05-Mar-2026 07:57:24 CET pre-events
+Opened a file at URL root://f01-152-189-e.gridka.de:23303//store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/006455CD-9CDB-B843-B50D-5721C39F30CE.root?org.dcache.uuid=5b95608c-94bc-465f-8ff9-1ad1d1dbca70&org.dcache.xrootd.client=ppalit.1179851@lxplus903.cern.ch&xrd.logintoken=org.dcache.door=2a00:139c:5:1d9:0:41:d2:89:1094&xrdcl.requuid=9f588c4b-bc06-48f5-b018-7b44ba5800ae
+%MSG
+05-Mar-2026 07:57:26 CET  Successfully opened file root://xrootd-cms.infn.it//store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/006455CD-9CDB-B843-B50D-5721C39F30CE.root
+%MSG-f XrdAdaptor:  (NoModuleName) 05-Mar-2026 07:57:35 CET pre-events
+Opened a file at URL root://f01-152-189-e.gridka.de:23303//store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/006455CD-9CDB-B843-B50D-5721C39F30CE.root?org.dcache.uuid=2a526057-b618-4371-b1e9-7bf8d075adc9&org.dcache.xrootd.client=ppalit.1179851@lxplus903.cern.ch&tried=cmsxrootd-2.gridka.de&triedrc=resel&xrd.logintoken=org.dcache.door=2a00:139c:5:1d9:0:41:d2:89:1094&xrdcl.requuid=b41af730-eb0f-49d6-b4a0-685beab6b0e1
+%MSG
+Begin processing the 1st record. Run 1, Event 170539003, LumiSection 170540 on stream 0 at 05-Mar-2026 07:57:36.278 CET
+Begin processing the 11th record. Run 1, Event 170539006, LumiSection 170540 on stream 0 at 05-Mar-2026 07:57:52.239 CET
+Begin processing the 21st record. Run 1, Event 170539014, LumiSection 170540 on stream 0 at 05-Mar-2026 07:57:52.680 CET
+%MSG-f XrdAdaptor:  (NoModuleName) 05-Mar-2026 07:57:52 CET pre-events
+Opened a file at URL root://f01-152-189-e.gridka.de:23303//store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/006455CD-9CDB-B843-B50D-5721C39F30CE.root?org.dcache.uuid=94d6bc90-53bb-44c6-8cae-56763ed924f5&org.dcache.xrootd.client=ppalit.1179851@lxplus903.cern.ch&tried=cmsxrootd-2.gridka.de&triedrc=resel&xrd.logintoken=org.dcache.door=2a00:139c:5:1d9:0:41:d2:89:1094&xrdcl.requuid=e749af61-4566-4332-ac11-c5742ee374fe
+%MSG
+Begin processing the 31st record. Run 1, Event 170539035, LumiSection 170540 on stream 0 at 05-Mar-2026 07:57:54.226 CET
+Begin processing the 41st record. Run 1, Event 170539046, LumiSection 170540 on stream 0 at 05-Mar-2026 07:57:54.646 CET
+Begin processing the 51st record. Run 1, Event 170539050, LumiSection 170540 on stream 0 at 05-Mar-2026 07:57:55.053 CET
+Begin processing the 61st record. Run 1, Event 170539062, LumiSection 170540 on stream 0 at 05-Mar-2026 07:57:55.493 CET
+Begin processing the 71st record. Run 1, Event 170539070, LumiSection 170540 on stream 0 at 05-Mar-2026 07:57:55.913 CET
+Begin processing the 81st record. Run 1, Event 170539080, LumiSection 170540 on stream 0 at 05-Mar-2026 07:57:56.343 CET
+Begin processing the 91st record. Run 1, Event 170539099, LumiSection 170540 on stream 0 at 05-Mar-2026 07:57:56.760 CET
+05-Mar-2026 07:57:57 CET  Closed file root://xrootd-cms.infn.it//store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/006455CD-9CDB-B843-B50D-5721C39F30CE.root
+TimeReport> Time report complete in 41.3939 seconds
+ Time Summary: 
+ - Min event:   0.00722752
+ - Max event:   14.1037
+ - Avg event:   0.20858
+ - Total loop:  24.0891
+ - Total init:  17.3048
+ - Total job:   41.3939
+ - Total EventSetup: 10.3743
+ - Total non-module: 7.27511e+07
+ Event Throughput: 4.15126 ev/s
+ CPU Summary: 
+ - Total loop:     9.77048
+ - Total init:     11.368
+ - Total extra:    0
+ - Total children: 0.064309
+ - Total job:      21.1385
+ Processing Summary: 
+ - Number of Events:  100
+ - Number of Global Begin Lumi Calls:  1
+ - Number of Global Begin Run Calls: 1
+
+
+TrigReport ---------- Event  Summary ------------
+TrigReport Events total = 100 passed = 100 failed = 0
+
+TrigReport ---------- Path   Summary ------------
+TrigReport  Trig Bit#   Executed     Passed     Failed      Error Name
+TrigReport     1    0        100        100          0          0 p
+
+
+TrigReport -------End-Path   Summary ------------
+TrigReport  Trig Bit#   Executed     Passed     Failed      Error Name
+TrigReport     0    0        100        100          0          0 endjob
+TrigReport     0    1        100        100          0          0 outpath
+
+
+TrigReport ---------- Modules in Path: p ------------
+TrigReport  Trig Bit#    Visited     Passed     Failed      Error Name
+TrigReport     1    0        100        100          0          0 deepTau2017v2p1
+TrigReport     1    1        100        100          0          0 deepTau2018v2p5
+TrigReport     1    2        100        100          0          0 slimmedTausNewID
+TrigReport     1    3        100        100          0          0 deepTau2017v2p1Ver2
+TrigReport     1    4        100        100          0          0 deepTau2018v2p5Ver2
+TrigReport     1    5        100        100          0          0 slimmedTausNewIDVer2
+
+
+TrigReport ------ Modules in End-Path: endjob ------------
+TrigReport  Trig Bit#    Visited     Passed     Failed      Error Name
+TrigReport     0    0        100        100          0          0 MEtoEDMConverter
+
+
+TrigReport ------ Modules in End-Path: outpath ------------
+TrigReport  Trig Bit#    Visited     Passed     Failed      Error Name
+TrigReport     0    0        100        100          0          0 out
+
+
+TrigReport ---------- Module Summary ------------
+TrigReport    Visited   Executed     Passed     Failed      Error Name
+TrigReport        100        100        100          0          0 MEtoEDMConverter
+TrigReport        100        100        100          0          0 TriggerResults
+TrigReport        100        100        100          0          0 deepTau2017v2p1
+TrigReport        100        100        100          0          0 deepTau2017v2p1Ver2
+TrigReport        100        100        100          0          0 deepTau2018v2p5
+TrigReport        100        100        100          0          0 deepTau2018v2p5Ver2
+TrigReport        100        100        100          0          0 endjob
+TrigReport        100        100        100          0          0 out
+TrigReport        100        100        100          0          0 outpath
+TrigReport        100        100        100          0          0 p
+TrigReport        100        100        100          0          0 patTauDiscriminationByElectronRejectionMVA6
+TrigReport        100        100        100          0          0 patTauDiscriminationByElectronRejectionMVA6Raw
+TrigReport        100        100        100          0          0 patTauDiscriminationByElectronRejectionMVA6RawVer2
+TrigReport        100        100        100          0          0 patTauDiscriminationByElectronRejectionMVA6Ver2
+TrigReport        100        100        100          0          0 rerunDiscriminationByIsolationNewDMMVA
+TrigReport        100        100        100          0          0 rerunDiscriminationByIsolationNewDMMVAVer2
+TrigReport        100        100        100          0          0 rerunDiscriminationByIsolationNewDMMVAraw
+TrigReport        100        100        100          0          0 rerunDiscriminationByIsolationNewDMMVArawVer2
+TrigReport        100        100        100          0          0 rerunDiscriminationByIsolationOldDMMVA
+TrigReport        100        100        100          0          0 rerunDiscriminationByIsolationOldDMMVAVer2
+TrigReport        100        100        100          0          0 rerunDiscriminationByIsolationOldDMMVAraw
+TrigReport        100        100        100          0          0 rerunDiscriminationByIsolationOldDMMVArawVer2
+TrigReport        100        100        100          0          0 rerunDiscriminationByIsolationOldDMdR0p3MVA
+TrigReport        100        100        100          0          0 rerunDiscriminationByIsolationOldDMdR0p3MVAVer2
+TrigReport        100        100        100          0          0 rerunDiscriminationByIsolationOldDMdR0p3MVAraw
+TrigReport        100        100        100          0          0 rerunDiscriminationByIsolationOldDMdR0p3MVArawVer2
+TrigReport        100        100        100          0          0 slimmedTausNewID
+TrigReport        100        100        100          0          0 slimmedTausNewIDVer2
+
+
+TimeReport ---------- Event  Summary ---[sec]----
+TimeReport       event loop CPU/event = 0.097759
+TimeReport      event loop Real/event = 0.241625
+TimeReport     sum Streams Real/event = 0.212410
+TimeReport efficiency CPU/Real/thread = 0.404591
+
+TimeReport ---------- Path   Summary ---[Real sec]----
+TimeReport  per event     per exec  Name
+TimeReport   0.203675     0.203675  p
+
+TimeReport  per event     per exec  Name
+
+TimeReport -------End-Path   Summary ---[Real sec]----
+TimeReport  per event     per exec  Name
+TimeReport   0.121402     0.121402  endjob
+TimeReport   0.208572     0.208572  outpath
+
+TimeReport  per event     per exec  Name
+
+TimeReport ---------- Modules in Path: p ---[Real sec]----
+TimeReport  per event    per visit  Name
+TimeReport   0.000847     0.000847  deepTau2017v2p1
+TimeReport   0.000859     0.000859  deepTau2018v2p5
+TimeReport   0.000104     0.000104  slimmedTausNewID
+TimeReport   0.000854     0.000854  deepTau2017v2p1Ver2
+TimeReport   0.002351     0.002351  deepTau2018v2p5Ver2
+TimeReport   0.000144     0.000144  slimmedTausNewIDVer2
+
+TimeReport  per event    per visit  Name
+
+TimeReport ------ Modules in End-Path: endjob ---[Real sec]----
+TimeReport  per event    per visit  Name
+TimeReport   0.000002     0.000002  MEtoEDMConverter
+
+
+TimeReport ------ Modules in End-Path: outpath ---[Real sec]----
+TimeReport  per event    per visit  Name
+TimeReport   0.005189     0.005189  out
+
+TimeReport  per event    per visit  Name
+
+TimeReport ---------- Module Summary ---[Real sec]----
+TimeReport  per event     per exec    per visit  Name
+TimeReport   0.000002     0.000002     0.000002  MEtoEDMConverter
+TimeReport   0.000003     0.000003     0.000003  TriggerResults
+TimeReport   0.000847     0.000847     0.000847  deepTau2017v2p1
+TimeReport   0.000854     0.000854     0.000854  deepTau2017v2p1Ver2
+TimeReport   0.000859     0.000859     0.000859  deepTau2018v2p5
+TimeReport   0.002351     0.002351     0.002351  deepTau2018v2p5Ver2
+TimeReport   0.000003     0.000003     0.000003  endjob
+TimeReport   0.005189     0.005189     0.005189  out
+TimeReport   0.000008     0.000008     0.000008  outpath
+TimeReport   0.000003     0.000003     0.000003  p
+TimeReport   0.000026     0.000026     0.000026  patTauDiscriminationByElectronRejectionMVA6
+TimeReport   0.000051     0.000051     0.000051  patTauDiscriminationByElectronRejectionMVA6Raw
+TimeReport   0.000152     0.000152     0.000152  patTauDiscriminationByElectronRejectionMVA6RawVer2
+TimeReport   0.000044     0.000044     0.000044  patTauDiscriminationByElectronRejectionMVA6Ver2
+TimeReport   0.000022     0.000022     0.000022  rerunDiscriminationByIsolationNewDMMVA
+TimeReport   0.000135     0.000135     0.000135  rerunDiscriminationByIsolationNewDMMVAVer2
+TimeReport   0.000110     0.000110     0.000110  rerunDiscriminationByIsolationNewDMMVAraw
+TimeReport   0.000116     0.000116     0.000116  rerunDiscriminationByIsolationNewDMMVArawVer2
+TimeReport   0.000018     0.000018     0.000018  rerunDiscriminationByIsolationOldDMMVA
+TimeReport   0.000095     0.000095     0.000095  rerunDiscriminationByIsolationOldDMMVAVer2
+TimeReport   0.000070     0.000070     0.000070  rerunDiscriminationByIsolationOldDMMVAraw
+TimeReport   0.000078     0.000078     0.000078  rerunDiscriminationByIsolationOldDMMVArawVer2
+TimeReport   0.000019     0.000019     0.000019  rerunDiscriminationByIsolationOldDMdR0p3MVA
+TimeReport   0.000107     0.000107     0.000107  rerunDiscriminationByIsolationOldDMdR0p3MVAVer2
+TimeReport   0.000058     0.000058     0.000058  rerunDiscriminationByIsolationOldDMdR0p3MVAraw
+TimeReport   0.000077     0.000077     0.000077  rerunDiscriminationByIsolationOldDMdR0p3MVArawVer2
+TimeReport   0.000104     0.000104     0.000104  slimmedTausNewID
+TimeReport   0.000144     0.000144     0.000144  slimmedTausNewIDVer2
+
+TimeReport  per event     per exec    per visit  Name
+
+T---Report end!
+
+

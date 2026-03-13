@@ -1,7 +1,7 @@
 # Produce pat::Tau collection with the new DNN Tau-Ids from miniAOD 12Apr2018_94X_mc2017
 
 import FWCore.ParameterSet.Config as cms
-
+from FWCore.ParameterSet.Config import PSet
 # Options
 #from FWCore.ParameterSet.VarParsing import VarParsing
 # options = VarParsing('analysis')
@@ -12,7 +12,7 @@ eventsToProcess = 100
 nThreads = 1
 phase2 = False
 
-useSONIC = False
+useSONIC = True
 
 if not useSONIC:
     process = cms.Process('TauID')
@@ -21,9 +21,24 @@ else:
     process = cms.Process('TauID', deepTauSonicTriton)
     process.load("HeterogeneousCore.SonicTriton.TritonService_cff")
     process.TritonService.verbose = True
-    process.TritonService.fallback.enable = True
+    process.TritonService.fallback.enable = False
+    #process.TritonService.modelRepositoryPath = cms.untracked.string("/afs/cern.ch/work/p/ppalit2/public/test_sonic/onnx_models/RecoTauTag-TrainingFiles/DeepTauIdSONIC/")
+    #process.TritonService.servers = cms.untracked.vstring("localhost:8001")
+    process.options.numberOfStreams = 4
+    process.TritonService.servers = cms.untracked.VPSet(
+        PSet(
+            name = cms.untracked.string("lxplus_local_gpu"),
+            address = cms.untracked.string("localhost"),
+            port = cms.untracked.uint32(8013),
+            #useSSL = cms.untracked.bool(False),
+            #modelRepository = cms.string("/afs/cern.ch/work/p/ppalit2/public/test_sonic/RecoTauTag-TrainingFiles/DeepTauIdSONIC"),
+            #fallback = cms.bool(True),
+            #useGPU = cms.bool(False)
+        )
+    )
+    
     # change to True if want to use GPU
-    process.TritonService.fallback.useGPU = False
+    #process.TritonService.fallback.useGPU = True
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 process.load('Configuration.StandardSequences.EndOfProcess_cff')
@@ -36,7 +51,8 @@ if phase2:
 else:
     process.load('Configuration.Geometry.GeometryRecoDB_cff')
     process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2018_realistic', '')
-    inputfile = '/store/mc/RunIISummer20UL18MiniAOD/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/009636D7-07B2-DB49-882D-C251FD62CCE7.root'
+    #inputfile = '/store/mc/RunIISummer20UL18MiniAOD/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/009636D7-07B2-DB49-882D-C251FD62CCE7.root'
+    inputfile = '/store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/006455CD-9CDB-B843-B50D-5721C39F30CE.root'
 
 # Input source
 process.source = cms.Source('PoolSource', fileNames = cms.untracked.vstring(
@@ -115,7 +131,12 @@ if process.maxEvents.input.value()>10000 or process.maxEvents.input.value()<0:
      process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 process.options = cms.untracked.PSet(
-     wantSummary = cms.untracked.bool(False),
+     wantSummary = cms.untracked.bool(True),
      numberOfThreads = cms.untracked.uint32(nThreads),
      numberOfStreams = cms.untracked.uint32(0)
 )
+
+process.Timing = cms.Service("Timing",
+    summaryOnly = cms.untracked.bool(True)
+)
+
