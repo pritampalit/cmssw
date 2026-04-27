@@ -214,6 +214,8 @@ void DeepTauIdSonicProducer::produce(edm::Event& iEvent, edm::EventSetup const& 
     return;
   }
 
+  std::cout<< "This is SONIC PRODUCER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+  
   const auto& output_tauval = iOutput.at("main_output/Softmax");
   const auto& outputs_tauval = output_tauval.fromServer<float>();
 

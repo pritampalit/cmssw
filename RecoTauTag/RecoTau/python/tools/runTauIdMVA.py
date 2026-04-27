@@ -2,6 +2,7 @@ import FWCore.ParameterSet.Config as cms
 from RecoTauTag.RecoTau.TauDiscriminatorTools import noPrediscriminants
 from RecoTauTag.RecoTau.PATTauDiscriminationByMVAIsolationRun2_cff import patDiscriminationByIsolationMVArun2v1raw, patDiscriminationByIsolationMVArun2v1
 from RecoTauTag.RecoTau.DeepTau_cfi import DeepTau
+from RecoTauTag.RecoTau.DeepTauONNX_cfi import DeepTauONNX
 from RecoTauTag.RecoTau.DeepTauIdSonicProducer_cfi import DeepTauIdSonicProducer
 from RecoTauTag.RecoTau.tauIdWPsDefs import WORKING_POINTS_v2p1, WORKING_POINTS_v2p5, WORKING_POINTS_PHASEII_v2p5, WORKING_POINTS_BOOSTED_v2p0
 
@@ -776,13 +777,23 @@ class TauIDEmbedder(object):
             _deepTauName = "deepTau2017v2"
             workingPoints_ = WORKING_POINTS_v2p1
 
+            '''
             file_names = [
                 'core:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2017v2p6_e6_core.pb',
                 'inner:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2017v2p6_e6_inner.pb',
                 'outer:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2017v2p6_e6_outer.pb',
             ]
+            '''
+
+            file_names = [
+                'core:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/DeepTauId/deepTau_2017v2p6_e6_core.onnx',
+                'inner:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/DeepTauId/deepTau_2017v2p6_e6_inner.onnx',
+                'outer:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/DeepTauId/deepTau_2017v2p6_e6_outer.onnx',
+            ]
+            
             full_version = self.getDeepTauVersion(file_names[0])
-            setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
+            #setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
+            setattr(self.process,_deepTauName+self.postfix,DeepTauONNX.clone(
                 Prediscriminants = noPrediscriminants,
                 taus             = self.originalTauName,
                 graph_file       = file_names,
@@ -830,13 +841,23 @@ class TauIDEmbedder(object):
             _deepTauName = "deepTau2017v2p1"
             workingPoints_ = WORKING_POINTS_v2p1
 
+            '''
             file_names = [
                 'core:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2017v2p6_e6_core.pb',
                 'inner:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2017v2p6_e6_inner.pb',
                 'outer:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2017v2p6_e6_outer.pb',
             ]
+            '''
+
+            file_names = [
+                'core:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/DeepTauId/deepTau_2017v2p6_e6_core.onnx',
+                'inner:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/DeepTauId/deepTau_2017v2p6_e6_inner.onnx',
+                'outer:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/DeepTauId/deepTau_2017v2p6_e6_outer.onnx',
+            ]
+            
             full_version = self.getDeepTauVersion(file_names[0])
-            setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
+            #setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
+            setattr(self.process,_deepTauName+self.postfix,DeepTauONNX.clone(
                 Prediscriminants = noPrediscriminants,
                 taus             = self.originalTauName,
                 graph_file       = file_names,
@@ -885,13 +906,23 @@ class TauIDEmbedder(object):
             _deepTauName = "deepTau2018v2p5"
             workingPoints_ = WORKING_POINTS_v2p5
 
+            '''
             file_names = [
                 'core:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2018v2p5_core.pb',
                 'inner:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2018v2p5_inner.pb',
                 'outer:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2018v2p5_outer.pb',
             ]
+            '''
+
+            file_names = [
+                'core:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/DeepTauId/deepTau_2018v2p5_core.onnx',
+                'inner:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/DeepTauId/deepTau_2018v2p5_inner.onnx',
+                'outer:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/DeepTauId/deepTau_2018v2p5_outer.onnx',
+            ]
+            
             full_version = self.getDeepTauVersion(file_names[0])
-            setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
+            #setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
+            setattr(self.process,_deepTauName+self.postfix,DeepTauONNX.clone(
                 Prediscriminants                = noPrediscriminants,
                 taus                            = self.originalTauName,
                 graph_file                      = file_names,
@@ -944,13 +975,23 @@ class TauIDEmbedder(object):
             _deepTauName = "boostedDeepTau20161718v2p0"
             workingPoints_ = WORKING_POINTS_BOOSTED_v2p0
 
+            '''
             file_names = [
                 'core:RecoTauTag/TrainingFiles/data/BoostedDeepTauId/boosteddeepTau_RunIIv2p0_core.pb',
                 'inner:RecoTauTag/TrainingFiles/data/BoostedDeepTauId/boosteddeepTau_RunIIv2p0_inner.pb',
                 'outer:RecoTauTag/TrainingFiles/data/BoostedDeepTauId/boosteddeepTau_RunIIv2p0_outer.pb',
             ]
+            '''
+
+            file_names = [
+                'core:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/BoostedDeepTauId/boosteddeepTau_RunIIv2p0_core.onnx',
+                'inner:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/BoostedDeepTauId/boosteddeepTau_RunIIv2p0_inner.onnx',
+                'outer:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/BoostedDeepTauId/boosteddeepTau_RunIIv2p0_outer.onnx',
+            ]
+            
             full_version = self.getDeepTauVersion(file_names[0])
-            setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
+            #setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
+            setattr(self.process,_deepTauName+self.postfix,DeepTauONNX.clone(
                 Prediscriminants                = noPrediscriminants,
                 taus                            = self.originalTauName,
                 graph_file                      = file_names,
@@ -975,13 +1016,23 @@ class TauIDEmbedder(object):
             _deepTauName = "deepTau2026v2p5"
             workingPoints_ = WORKING_POINTS_PHASEII_v2p5
 
+            '''
             file_names = [
                 'core:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2026v2p5_core.pb',
                 'inner:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2026v2p5_inner.pb',
                 'outer:RecoTauTag/TrainingFiles/data/DeepTauId/deepTau_2026v2p5_outer.pb',
             ]
+            '''
+
+            file_names = [
+                'core:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/DeepTauId/deepTau_2026v2p5_core.onnx',
+                'inner:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/DeepTauId/deepTau_2026v2p5_inner.onnx',
+                'outer:/afs/cern.ch/work/p/ppalit2/public/test_sonic/CMSSW_16_0_0_pre4/src/onnx_models_new/RecoTauTag-TrainingFiles/DeepTauId/deepTau_2026v2p5_outer.onnx',
+            ]
+            
             full_version = self.getDeepTauVersion(file_names[0])
-            setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
+            #setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
+            setattr(self.process,_deepTauName+self.postfix,DeepTauONNX.clone(
                 Prediscriminants                = noPrediscriminants,
                 taus                            = self.originalTauName,
                 graph_file                      = file_names,

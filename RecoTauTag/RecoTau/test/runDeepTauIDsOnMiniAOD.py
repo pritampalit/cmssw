@@ -8,11 +8,11 @@ from FWCore.ParameterSet.Config import PSet
 # options.parseArguments()
 updatedTauName = "slimmedTausNewID"
 minimalOutput = True
-eventsToProcess = 100
+eventsToProcess = 1000
 nThreads = 1
 phase2 = False
 
-useSONIC = True
+useSONIC = False
 
 if not useSONIC:
     process = cms.Process('TauID')
@@ -47,17 +47,22 @@ from Configuration.AlCa.GlobalTag import GlobalTag
 if phase2:
     process.load('Configuration.Geometry.GeometryExtended2026D97Reco_cff')
     process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase2_realistic_T25', '')
-    inputfile = '/store/mc/Phase2Spring21DRMiniAOD/TTbar_TuneCP5_14TeV-pythia8/MINIAODSIM/PU200Phase2D80_113X_mcRun4_realistic_T25_v1_ext1-v1/280000/04e6741c-489a-4fed-9e0c-d7703c274b5a.root'
+    inputfile = ['/store/mc/Phase2Spring21DRMiniAOD/TTbar_TuneCP5_14TeV-pythia8/MINIAODSIM/PU200Phase2D80_113X_mcRun4_realistic_T25_v1_ext1-v1/280000/04e6741c-489a-4fed-9e0c-d7703c274b5a.root']
 else:
     process.load('Configuration.Geometry.GeometryRecoDB_cff')
     process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:phase1_2018_realistic', '')
     #inputfile = '/store/mc/RunIISummer20UL18MiniAOD/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v11_L1v1-v2/00000/009636D7-07B2-DB49-882D-C251FD62CCE7.root'
-    inputfile = '/store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/006455CD-9CDB-B843-B50D-5721C39F30CE.root'
+    inputfile = ['/store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/006455CD-9CDB-B843-B50D-5721C39F30CE.root',
+                 #'/store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/01292B43-5A7A-164B-92B7-292369F64D70.root',
+                 #'/store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/01C9A498-E555-494D-ADFE-BB9A69D28BA6.root',
+                 #'/store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/02FC89A4-E466-5A44-8CD9-C7FF6B5E5929.root',
+                 #'/store/mc/RunIISummer20UL18MiniAODv2/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8/MINIAODSIM/106X_upgrade2018_realistic_v16_L1v1-v2/120000/042C03E4-E211-034C-A54E-70248ACCECC8.root'
+                 ]
 
 # Input source
 process.source = cms.Source('PoolSource', fileNames = cms.untracked.vstring(
     # File from dataset TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8
-    inputfile
+    *inputfile
 ))
 
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(eventsToProcess) )
@@ -89,7 +94,7 @@ tauIdEmbedder2 = tauIdConfig.TauIDEmbedder(process, debug = False,
                     updatedTauName = updatedTauName+postfix,
                     postfix = postfix, # defaut "", specify non-trivial postfix if tool is run more than one time
                     toKeep = toKeep)
-tauIdEmbedder2.runTauID()
+#tauIdEmbedder2.runTauID()
 
 # Output definition
 process.out = cms.OutputModule("PoolOutputModule",
@@ -105,7 +110,7 @@ if not minimalOutput:
      process.out.outputCommands = MINIAODSIMEventContent.outputCommands
      process.out.overrideBranchesSplitLevel = MiniAODOverrideBranchesSplitLevel
 process.out.outputCommands.append("keep *_"+updatedTauName+"_*_*")
-process.out.outputCommands.append("keep *_"+updatedTauName+postfix+"_*_*")
+#process.out.outputCommands.append("keep *_"+updatedTauName+postfix+"_*_*")
 
 # Adapt to old phase2 input samples where slimmedElectronsHGC are called slimmedElectronsFromMultiCl
 if phase2:
@@ -115,8 +120,8 @@ if phase2:
 process.p = cms.Path(
     process.rerunMvaIsolationSequence *
     getattr(process,updatedTauName)
-    * getattr(process,"rerunMvaIsolationSequence"+postfix) *
-    getattr(process,updatedTauName+postfix)
+    #* getattr(process,"rerunMvaIsolationSequence"+postfix) *
+    #getattr(process,updatedTauName+postfix)
 )
 process.endjob = cms.EndPath(process.endOfProcess)
 process.outpath = cms.EndPath(process.out)
@@ -130,6 +135,7 @@ if process.maxEvents.input.value()>10:
 if process.maxEvents.input.value()>10000 or process.maxEvents.input.value()<0:
      process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
+'''     
 process.options = cms.untracked.PSet(
      wantSummary = cms.untracked.bool(True),
      numberOfThreads = cms.untracked.uint32(nThreads),
@@ -139,4 +145,44 @@ process.options = cms.untracked.PSet(
 process.Timing = cms.Service("Timing",
     summaryOnly = cms.untracked.bool(True)
 )
+'''
 
+process.FastTimerService = cms.Service( "FastTimerService",
+    dqmPath = cms.untracked.string( "DQM/TimerService" ),
+    dqmModuleTimeRange = cms.untracked.double( 40.0 ),
+    enableDQMbyPath = cms.untracked.bool( True ),
+    writeJSONSummary = cms.untracked.bool( True ),
+    dqmPathMemoryResolution = cms.untracked.double( 5000.0 ),
+    enableDQM = cms.untracked.bool( True ),
+    enableDQMbyModule = cms.untracked.bool( True ),
+    dqmModuleMemoryRange = cms.untracked.double( 100000.0 ),
+    dqmModuleMemoryResolution = cms.untracked.double( 500.0 ),
+    dqmMemoryResolution = cms.untracked.double( 5000.0 ),
+    enableDQMbyLumiSection = cms.untracked.bool( True ),
+    dqmPathTimeResolution = cms.untracked.double( 0.5 ),
+    printEventSummary = cms.untracked.bool( False ),
+    dqmPathTimeRange = cms.untracked.double( 100.0 ),
+    dqmTimeRange = cms.untracked.double( 2000.0 ),
+    enableDQMTransitions = cms.untracked.bool( False ),
+    dqmPathMemoryRange = cms.untracked.double( 1000000.0 ),
+    dqmLumiSectionsRange = cms.untracked.uint32( 2500 ),
+    enableDQMbyProcesses = cms.untracked.bool( True ),
+    dqmMemoryRange = cms.untracked.double( 1000000.0 ),
+    dqmTimeResolution = cms.untracked.double( 5.0 ),
+    printRunSummary = cms.untracked.bool( False ),
+    dqmModuleTimeResolution = cms.untracked.double( 0.2 ),
+    printJobSummary = cms.untracked.bool( True ),
+    jsonFileName = cms.untracked.string(  "time_deeptauTF.json" )
+)
+
+
+process.ThroughputService = cms.Service( "ThroughputService",
+    dqmPath = cms.untracked.string( "HLT/Throughput" ),
+    eventRange = cms.untracked.uint32( 10000 ),
+    timeRange = cms.untracked.double( 60000.0 ),
+    printEventSummary = cms.untracked.bool( True ),
+    eventResolution = cms.untracked.uint32( 100 ),
+    enableDQM = cms.untracked.bool( True ),
+    dqmPathByProcesses = cms.untracked.bool( True ),
+    timeResolution = cms.untracked.double( 5.828 )
+)
