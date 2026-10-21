@@ -29,8 +29,6 @@
 #include "RecoTauTag/RecoTau/interface/TauWPThreshold.h"
 #include "DataFormats/TauReco/interface/PFTauTransverseImpactParameterAssociation.h"
 #include "CommonTools/Utils/interface/StringObjectFunction.h"
-#include "PhysicsTools/TensorFlow/interface/TensorFlow.h"
-#include "tensorflow/core/util/memmapped_file_system.h"
 
 #include <Math/VectorUtil.h>
 #include <map>
@@ -858,10 +856,6 @@ public:
 
     IDOutput(const std::vector<size_t>& num, const std::vector<size_t>& den) : num_(num), den_(den) {}
 
-    // for direct inference, read the output tensorflow::Tensor
-    float read_value(const tensorflow::Tensor& pred, size_t tau_index, size_t elem) const {
-      return pred.matrix<float>()(tau_index, elem);
-    }
     // for SONIC, read the output vector
     float read_value(const std::vector<std::vector<float>>& pred, size_t tau_index, size_t elem) const {
       return pred.at(tau_index).at(elem);
@@ -1271,13 +1265,7 @@ protected:
     sc::FeatureT ft = sc::FeatureT::TauFlat;
     const sc::ScalingParams& sp = scalingParamsMap_->at(std::make_pair(ft, false));
 
-    const auto& get = [&](int var_index) -> float& {
-      if constexpr (std::is_same_v<TauBlockType, std::vector<float>::iterator>) {
-        return *(tauBlockInputs + tauInputs_indices_.at(var_index));
-      } else {
-        return ((tensorflow::Tensor)tauBlockInputs).matrix<float>()(0, tauInputs_indices_.at(var_index));
-      }
-    };
+    const auto& get = [&](int var_index) -> float& { return *(tauBlockInputs + tauInputs_indices_.at(var_index)); };
 
     auto leadChargedHadrCand = dynamic_cast<const CandidateCastType*>(tau.leadChargedHadrCand().get());
 
@@ -1445,13 +1433,7 @@ protected:
           -scalingParamsMap_->at(std::make_pair(ft_e, false)).mean_.size();  // size of Electron features
     }
 
-    const auto& get = [&](int var_index) -> float& {
-      if constexpr (std::is_same_v<EgammaBlockType, std::vector<float>::iterator>) {
-        return *(egammaBlockInputs + var_index);
-      } else {
-        return ((tensorflow::Tensor)egammaBlockInputs).tensor<float, 4>()(idx, 0, 0, var_index);
-      }
-    };
+    const auto& get = [&](int var_index) -> float& { return *(egammaBlockInputs + var_index); };
 
     const bool valid_index_pf_ele = cell_map.count(CellObjectType::PfCand_electron);
     const bool valid_index_pf_gamma = cell_map.count(CellObjectType::PfCand_gamma);
@@ -1719,13 +1701,7 @@ protected:
     int PFmu_index_offset = scalingParamsMap_->at(std::make_pair(ft_global, false)).mean_.size();
     int mu_index_offset = PFmu_index_offset + scalingParamsMap_->at(std::make_pair(ft_PFmu, false)).mean_.size();
 
-    const auto& get = [&](int var_index) -> float& {
-      if constexpr (std::is_same_v<MuonBlockType, std::vector<float>::iterator>) {
-        return *(muonBlockInputs + var_index);
-      } else {
-        return ((tensorflow::Tensor)muonBlockInputs).tensor<float, 4>()(idx, 0, 0, var_index);
-      }
-    };
+    const auto& get = [&](int var_index) -> float& { return *(muonBlockInputs + var_index); };
 
     const bool valid_index_pf_muon = cell_map.count(CellObjectType::PfCand_muon);
     const bool valid_index_muon = cell_map.count(CellObjectType::Muon);
@@ -1875,13 +1851,7 @@ protected:
     int PFchH_index_offset = scalingParamsMap_->at(std::make_pair(ft_global, false)).mean_.size();
     int PFnH_index_offset = PFchH_index_offset + scalingParamsMap_->at(std::make_pair(ft_PFchH, false)).mean_.size();
 
-    const auto& get = [&](int var_index) -> float& {
-      if constexpr (std::is_same_v<HadronBlockType, std::vector<float>::iterator>) {
-        return *(hadronBlockInputs + var_index);
-      } else {
-        return ((tensorflow::Tensor)hadronBlockInputs).tensor<float, 4>()(idx, 0, 0, var_index);
-      }
-    };
+    const auto& get = [&](int var_index) -> float& { return *(hadronBlockInputs + var_index); };
 
     const bool valid_chH = cell_map.count(CellObjectType::PfCand_chargedHadron);
     const bool valid_nH = cell_map.count(CellObjectType::PfCand_neutralHadron);

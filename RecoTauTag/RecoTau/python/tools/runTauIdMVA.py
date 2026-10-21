@@ -2,7 +2,6 @@ import FWCore.ParameterSet.Config as cms
 from RecoTauTag.RecoTau.TauDiscriminatorTools import noPrediscriminants
 from RecoTauTag.RecoTau.PATTauDiscriminationByMVAIsolationRun2_cff import patDiscriminationByIsolationMVArun2v1raw, patDiscriminationByIsolationMVArun2v1
 from RecoTauTag.RecoTau.DeepTau_cfi import DeepTau
-from RecoTauTag.RecoTau.DeepTauONNX_cfi import DeepTauONNX
 from RecoTauTag.RecoTau.DeepTauIdSonicProducer_cfi import DeepTauIdSonicProducer
 from RecoTauTag.RecoTau.tauIdWPsDefs import WORKING_POINTS_v2p1, WORKING_POINTS_v2p5, WORKING_POINTS_PHASEII_v2p5, WORKING_POINTS_BOOSTED_v2p0
 
@@ -785,7 +784,7 @@ class TauIDEmbedder(object):
             
 
             full_version = self.getDeepTauVersion(file_names[0])
-            setattr(self.process,_deepTauName+self.postfix,DeepTauONNX.clone(
+            setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
                 Prediscriminants = noPrediscriminants,
                 taus             = self.originalTauName,
                 graph_file       = file_names,
@@ -830,7 +829,7 @@ class TauIDEmbedder(object):
             ]
             
             full_version = self.getDeepTauVersion(file_names[0])
-            setattr(self.process,_deepTauName+self.postfix,DeepTauONNX.clone(
+            setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
                 Prediscriminants = noPrediscriminants,
                 taus             = self.originalTauName,
                 graph_file       = file_names,
@@ -876,7 +875,7 @@ class TauIDEmbedder(object):
             ]
                         
             full_version = self.getDeepTauVersion(file_names[0])
-            setattr(self.process,_deepTauName+self.postfix,DeepTauONNX.clone(
+            setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
                 Prediscriminants                = noPrediscriminants,
                 taus                            = self.originalTauName,
                 graph_file                      = file_names,
@@ -926,7 +925,7 @@ class TauIDEmbedder(object):
             ]
             
             full_version = self.getDeepTauVersion(file_names[0])
-            setattr(self.process,_deepTauName+self.postfix,DeepTauONNX.clone(
+            setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
                 Prediscriminants                = noPrediscriminants,
                 taus                            = self.originalTauName,
                 graph_file                      = file_names,
@@ -978,7 +977,7 @@ class TauIDEmbedder(object):
             ]
             
             full_version = self.getDeepTauVersion(file_names[0])
-            setattr(self.process,_deepTauName+self.postfix,DeepTauONNX.clone(
+            setattr(self.process,_deepTauName+self.postfix,DeepTau.clone(
                 Prediscriminants                = noPrediscriminants,
                 taus                            = self.originalTauName,
                 graph_file                      = file_names,
