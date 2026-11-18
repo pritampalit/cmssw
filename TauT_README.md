@@ -1,6 +1,6 @@
 # TauT (Tau Transformer) scores for HPS taus
 
-Branch for tau ID studies, based on CMSSW_17_0_0_pre5. Model: Tim's TauT (`RecoTauTag/TrainingFiles/data/TauTransformer/taut_tim-ep59.onnx`).
+Branch for tau ID studies, based on CMSSW_17_0_0_pre5. Model: Tim's TauT (`RecoTauTag/RecoTau/data/taut_tim-ep59.onnx`).
 Scores are between 0 and 1 for HPS taus and -1 for all other taus.
 
 ## Install

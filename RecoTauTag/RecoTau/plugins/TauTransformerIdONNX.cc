@@ -204,7 +204,7 @@ public:
     desc.add<edm::InputTag>("vertices", edm::InputTag("offlineSlimmedPrimaryVertices"));
     desc.add<edm::InputTag>("secondVertices", edm::InputTag("slimmedSecondaryVertices"));
     desc.add<edm::InputTag>("rho", edm::InputTag("fixedGridRhoAll"));
-    desc.add<std::string>("model", "RecoTauTag/TrainingFiles/data/TauTransformer/taut_tim-ep59.onnx");
+    desc.add<std::string>("model", "RecoTauTag/RecoTau/data/taut_tim-ep59.onnx");
     desc.add<std::vector<std::string>>("pfCandFeatures", taut::pfCandFeatures);
     desc.add<std::vector<std::string>>("eleFeatures", taut::eleFeatures);
     desc.add<std::vector<std::string>>("muonFeatures", taut::muonFeatures);
