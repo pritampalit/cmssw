@@ -20,7 +20,8 @@ class TauIDEmbedder(object):
         "againstEle", #payloads from GT (2018)
         "newDMPhase2v1", #payloads from phase2 GT
         "againstElePhase2v1", #payloads from phase2 GT
-        "deepTau2017v2", "deepTau2017v2p1", "deepTau2018v2p5", "boostedDeepTauRunIIv2p0", "deepTau2026v2p5"
+        "deepTau2017v2", "deepTau2017v2p1", "deepTau2018v2p5", "boostedDeepTauRunIIv2p0", "deepTau2026v2p5",
+        "tauT", # Tau Transformer
     ])
 
     def __init__(self, process, debug = False,
@@ -928,6 +929,25 @@ class TauIDEmbedder(object):
 
             _rerunMvaIsolationTask.add(_deepTauProducer)
             _rerunMvaIsolationSequence += _deepTauProducer
+
+        if "tauT" in self.toKeep:
+            if self.debug: print ("Adding TauT (Tau Transformer) IDs")
+
+            _tauTName = "tauT"
+            from RecoTauTag.RecoTau.tauTransformerIdONNX_cfi import tauTransformerIdONNX
+            setattr(self.process, _tauTName+self.postfix, tauTransformerIdONNX.clone(
+                taus = self.originalTauName
+            ))
+            _tauTProducer = getattr(self.process, _tauTName+self.postfix)
+            for target in ["jet", "e", "mu"]:
+                setattr(tauIDSources, 'byTauTVS{}raw'.format(target),
+                        cms.PSet(inputTag = cms.InputTag(_tauTName+self.postfix, 'VS{}'.format(target)), workingPointIndex = cms.int32(-1)))
+            for prob in ["Tau", "Ele", "Mu", "Jet"]:
+                setattr(tauIDSources, 'byTauTProb{}'.format(prob),
+                        cms.PSet(inputTag = cms.InputTag(_tauTName+self.postfix, 'prob{}'.format(prob)), workingPointIndex = cms.int32(-1)))
+
+            _rerunMvaIsolationTask.add(_tauTProducer)
+            _rerunMvaIsolationSequence += _tauTProducer
 
         if "boostedDeepTauRunIIv2p0" in self.toKeep:
             if self.debug: print ("Adding BoostedDeepTau v2p0 IDs for boostedTaus")

@@ -186,6 +186,13 @@ def nanoAOD_addTauIds(process, idsToRun=[], addPNetCHS=False, addUParTPuppi=Fals
     return process
 
 
+def nanoAOD_addTauT(process):
+    """Run TauT (Tau Transformer) on the MiniAOD taus in the NANO step and fill Tau_rawTauTVS{jet,e,mu} and Tau_probTauT*
+    (usage: --customise PhysicsTools/NanoAOD/nano_cff.nanoAOD_addTauT). Not for eras whose nanoAOD_customizeCommon already
+    re-runs tau IDs (run2_nanoAOD_106Xv2)."""
+    return nanoAOD_addTauIds(process, idsToRun=["tauT"])
+
+
 def nanoAOD_addBoostedTauIds(process, idsToRun=[]):
     if idsToRun:  # no-empty list of tauIDs to run
         boostedTauIdEmbedder = tauIdConfig.TauIDEmbedder(process, debug=False,

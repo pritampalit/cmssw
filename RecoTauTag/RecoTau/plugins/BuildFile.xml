@@ -10,12 +10,15 @@
   <use name="DataFormats/JetReco"/>
   <use name="DataFormats/MuonReco"/>
   <use name="DataFormats/ParticleFlowReco"/>
+  <use name="DataFormats/PatCandidates"/>
   <use name="DataFormats/TauReco"/>
   <use name="DataFormats/TrackReco"/>
   <use name="DataFormats/VertexReco"/>
+  <use name="FWCore/AbstractServices"/>
   <use name="FWCore/Framework"/>
   <use name="FWCore/MessageLogger"/>
   <use name="FWCore/ParameterSet"/>
+  <use name="FWCore/ServiceRegistry"/>
   <use name="FWCore/Utilities"/>
   <use name="Geometry/CaloGeometry"/>
   <use name="Geometry/HcalTowerAlgo"/>
@@ -23,6 +26,7 @@
   <use name="HeterogeneousCore/SonicTriton"/>
   <use name="MagneticField/Engine"/>
   <use name="MagneticField/Records"/>
+  <use name="PhysicsTools/ONNXRuntime"/>
   <use name="PhysicsTools/TensorFlow"/>
   <use name="RecoBTag/SecondaryVertex"/>
   <use name="RecoTauTag/RecoTau"/>
