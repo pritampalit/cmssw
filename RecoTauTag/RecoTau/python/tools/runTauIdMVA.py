@@ -942,9 +942,6 @@ class TauIDEmbedder(object):
             for target in ["jet", "e", "mu"]:
                 setattr(tauIDSources, 'byTauTVS{}raw'.format(target),
                         cms.PSet(inputTag = cms.InputTag(_tauTName+self.postfix, 'VS{}'.format(target)), workingPointIndex = cms.int32(-1)))
-            for prob in ["Tau", "Ele", "Mu", "Jet"]:
-                setattr(tauIDSources, 'byTauTProb{}'.format(prob),
-                        cms.PSet(inputTag = cms.InputTag(_tauTName+self.postfix, 'prob{}'.format(prob)), workingPointIndex = cms.int32(-1)))
 
             _rerunMvaIsolationTask.add(_tauTProducer)
             _rerunMvaIsolationSequence += _tauTProducer

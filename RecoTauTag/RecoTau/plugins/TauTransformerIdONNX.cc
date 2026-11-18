@@ -142,8 +142,8 @@ namespace taut {
     return c;
   }
 
-  // outputs
-  constexpr const char* kOutputs[7] = {"probTau", "probEle", "probMu", "probJet", "VSjet", "VSe", "VSmu"};
+  // outputs: tau vs jet, tau vs electron, tau vs muon
+  constexpr const char* kOutputs[3] = {"VSjet", "VSe", "VSmu"};
 
 }  // namespace taut
 
@@ -641,7 +641,7 @@ void TauTransformerIdONNX::produce(edm::Event& event, const edm::EventSetup&) {
     if (taus[i].isTauIDAvailable("chargedIsoPtSum"))
       sel.push_back(i);
   const size_t nTau = sel.size();
-  std::vector<std::vector<float>> scores(7, std::vector<float>(taus.size(), -1.f));
+  std::vector<std::vector<float>> scores(3, std::vector<float>(taus.size(), -1.f));
   if (nTau > 0 && !vertices.empty()) {
     const auto& pv = vertices.front();
     std::vector<Tokens> tok(nTau);
@@ -675,11 +675,9 @@ void TauTransformerIdONNX::produce(edm::Event& event, const edm::EventSetup&) {
     for (size_t i = 0; i < nTau; ++i) {
       const float* p = &out[i * 4];  // tau, e, mu, jet
       const size_t t = sel[i];
-      for (int k = 0; k < 4; ++k)
-        scores[k][t] = p[k];
-      scores[4][t] = p[0] / (p[0] + p[3]);
-      scores[5][t] = p[0] / (p[0] + p[1]);
-      scores[6][t] = p[0] / (p[0] + p[2]);
+      scores[0][t] = p[0] / (p[0] + p[3]);
+      scores[1][t] = p[0] / (p[0] + p[1]);
+      scores[2][t] = p[0] / (p[0] + p[2]);
     }
     if (dump_) {  // optional debug output
       for (size_t i = 0; i < nTau; ++i) {
@@ -701,7 +699,7 @@ void TauTransformerIdONNX::produce(edm::Event& event, const edm::EventSetup&) {
   edm::Handle<pat::TauCollection> tauHandle;
   event.getByToken(tausToken_, tauHandle);
   // store the outputs
-  for (int k = 0; k < 7; ++k) {
+  for (int k = 0; k < 3; ++k) {
     std::vector<reco::SingleTauDiscriminatorContainer> buffer(taus.size());
     for (size_t t = 0; t < taus.size(); ++t)
       buffer[t].rawValues.push_back(scores[k][t]);
